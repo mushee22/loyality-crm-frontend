@@ -1,0 +1,116 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
+import { Pagination } from "../../components/ui/pagination";
+import { Button } from "../../components/ui/button";
+import { Calendar, Eye, Filter } from "lucide-react";
+import { Card, CardHeader, CardContent, CardTitle } from "../../components/ui/card";
+
+import { getOrders } from "./api/orders";
+
+export default function OrderList() {
+    const [page, setPage] = useState(1);
+
+    const navigate = useNavigate();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['orders', page],
+        queryFn: () => getOrders({ page, per_page: 15 }),
+    });
+
+    if (isLoading) return <div className="p-8 text-center text-gray-500">Loading orders...</div>;
+
+    return (
+        <div className="space-y-6">
+
+            <Card className="border-gray-100 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-gray-100">
+                    <div className="space-y-1">
+                        <CardTitle className="text-xl font-bold">All Orders</CardTitle>
+                        <p className="text-sm text-gray-500">View and manage all orders here.</p>
+                    </div>
+                    <Button
+                        className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20"
+                        onClick={() => navigate('/orders/create')}
+                    >
+                        + Create Manual Order
+                    </Button>
+                </CardHeader>
+                <CardContent className="p-0">
+                    {/* Filters Toolbar */}
+                    <div className="p-4 flex flex-wrap gap-2 border-b border-gray-100 bg-white">
+                        <Button variant="outline" className="text-gray-500 font-normal">
+                            Filter by Status <Filter className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                        <Button variant="outline" className="text-gray-500 font-normal">
+                            All Users <Filter className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                        <Button variant="outline" className="text-gray-500 font-normal">
+                            Date From <Calendar className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                        <Button variant="outline" className="text-gray-500 font-normal">
+                            Date To <Calendar className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+                                    <TableHead className="font-semibold text-gray-600">Order Number</TableHead>
+                                    <TableHead className="font-semibold text-gray-600">User</TableHead>
+                                    <TableHead className="font-semibold text-gray-600">Status</TableHead>
+                                    <TableHead className="font-semibold text-gray-600">Items</TableHead>
+                                    <TableHead className="font-semibold text-gray-600">Total</TableHead>
+                                    <TableHead className="font-semibold text-gray-600">Created At</TableHead>
+                                    <TableHead className="font-semibold text-gray-600 text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {data?.data.map((order) => (
+                                    <TableRow key={order.id}>
+                                        <TableCell>
+                                            <div className="font-medium text-gray-900">{order.order_number}</div>
+                                            <div className="text-xs text-gray-500">ID: #{order.id}</div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-medium text-gray-900">{order.customer.name}</div>
+                                            <div className="text-xs text-gray-500">{order.customer.phone}</div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800">
+                                                Completed
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>{order.order_items?.length || 0}</TableCell>
+                                        <TableCell>₹{order.total_amount}</TableCell>
+                                        <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                onClick={() => navigate(`/orders/${order.id}`)}
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    <div className="px-4 py-4 border-t border-gray-100">
+                        <Pagination
+                            currentPage={data?.current_page || 1}
+                            totalPages={data?.last_page || 1}
+                            onPageChange={setPage}
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
