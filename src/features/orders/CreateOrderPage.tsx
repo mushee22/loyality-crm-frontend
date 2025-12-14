@@ -106,16 +106,21 @@ function OrderItemRow({ index, register, remove, setValue, watch, errors }: Orde
                                                 <span className="font-medium text-gray-900">{product.name}</span>
                                                 <span className="text-xs text-gray-400">SKU: {product.sku} • Stock: {product.stock}</span>
                                             </div>
-                                            <div className="flex flex-col items-end">
-                                                {product.discount_price && product.discount_price < product.price ? (
-                                                    <>
-                                                        <span className="text-xs text-gray-400 line-through">₹{product.price.toFixed(2)}</span>
-                                                        <span className="text-sm font-semibold text-green-600">₹{product.discount_price.toFixed(2)}</span>
-                                                    </>
+                                            {
+                                                product.price ? (
+                                                    <div className="flex flex-col items-end">
+                                                        {product.discount_price && product.discount_price < product.price ? (
+                                                            <>
+                                                                <span className="text-xs text-gray-400 line-through">₹{product?.price ?? 0}</span>
+                                                                <span className="text-sm font-semibold text-green-600">₹{product?.discount_price ?? 0}</span>
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-sm font-medium">₹{product?.price ?? 0}</span>
+                                                        )}
+                                                    </div>
                                                 ) : (
-                                                    <span className="text-sm font-medium">₹{product.price.toFixed(2)}</span>
+                                                    null
                                                 )}
-                                            </div>
                                         </div>
                                     </li>
                                 ))}
@@ -131,13 +136,16 @@ function OrderItemRow({ index, register, remove, setValue, watch, errors }: Orde
                 <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</Label>
                 <div className="flex flex-col justify-center h-10 px-3 text-sm bg-gray-50 rounded-md border border-gray-200">
                     {selectedProductData ? (
-                        selectedProductData.discount_price && selectedProductData.discount_price < selectedProductData.price ? (
+                        selectedProductData?.discount_price ? (
                             <>
-                                <span className="text-xs text-gray-400 line-through">₹{selectedProductData.price.toFixed(2)}</span>
-                                <span className="font-semibold text-green-600">₹{selectedProductData.discount_price.toFixed(2)}</span>
+                                <span className="text-xs text-gray-400 line-through">₹{selectedProductData?.price ?? 0}</span>
+                                <span className="font-semibold text-green-600">₹{selectedProductData?.discount_price ?? 0}</span>
                             </>
                         ) : (
-                            <span className="font-medium">₹{selectedProductData.price.toFixed(2)}</span>
+                            <>
+
+                                <span className="font-medium">₹{selectedProductData?.price ?? 0}</span>
+                            </>
                         )
                     ) : (
                         <span className="text-gray-400">-</span>

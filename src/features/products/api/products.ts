@@ -7,6 +7,7 @@ export const createProductSchema = z.object({
     price: z.coerce.number().min(0, "Price must be positive"),
     discount_price: z.coerce.number().min(0, "Discount price must be positive").optional(),
     stock: z.coerce.number().int().min(0, "Stock must be non-negative"),
+    image: z.any().optional().nullable(),
     is_active: z.boolean().default(true),
 });
 
@@ -20,6 +21,7 @@ export interface Product {
     price: number;
     discount_price: number | null;
     stock: number;
+    image_url: string | null;
     is_active: boolean;
     created_at: string;
     updated_at: string;
@@ -65,12 +67,59 @@ export const getProducts = async (params: GetProductsParams = {}) => {
 };
 
 export const createProduct = async (data: CreateProductData) => {
-    const response = await api.post('admin/products', data);
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            // Convert boolean to 1/0 for backend compatibility
+            if (typeof value === 'boolean') {
+                formData.append(key, value ? '1' : '0');
+            } else {
+                formData.append(key, value as any);
+            }
+        }
+    });
+
+    const response = await api.post('admin/products', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
     return response.data;
 };
 
 export const updateProduct = async ({ id, data }: { id: number; data: CreateProductData }) => {
-    const response = await api.put(`admin/products/${id}`, data);
+    const formData = new FormData();
+    // For update, we might need to handle _method for some backends, but assuming standard PUT/POST with FormData
+    // Since axios PUT with FormData works, but sometimes backends prefer POST with _method=PUT
+    // Sticking to direct update for now.
+
+    // NOTE: Many backends (like Laravel) struggle with PUT and FormData. 
+    // It is safer to use POST with _method="PUT" if the backend is Laravel/PHP.
+    // However, sticking to standard PUT as per existing code structure first.
+    // If issues arise, we can switch to POST + _method.
+
+    // Actually, to be safe with standard FormData + PUT issues, let's keep it simple first
+    // If 'image' is just a string (existing URL), we might not need FormData?
+    // But consistency is better.
+
+    Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            // Convert boolean to 1/0 for backend compatibility
+            if (typeof value === 'boolean') {
+                formData.append(key, value ? '1' : '0');
+            } else {
+                formData.append(key, value as any);
+            }
+        }
+    });
+    // Add method spoofing just in case, typical for PHP/Laravel backends
+    formData.append('_method', 'PUT');
+
+    const response = await api.post(`admin/products/${id}`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
     return response.data;
 };
 

@@ -14,6 +14,7 @@ import LoyaltyList from "./features/loyalties/LoyaltyList";
 import RewardList from "./features/rewards/RewardList";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import { Toaster } from "sonner";
+import SettingsPage from "./features/settings/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,10 @@ const router = createBrowserRouter([
       {
         path: "rewards",
         element: <RewardList />,
+      },
+      {
+        path: "settings",
+        element: <SettingsPage />,
       },
     ],
   },

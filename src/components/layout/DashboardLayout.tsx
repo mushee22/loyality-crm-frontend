@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, Users, ShoppingCart, Gift, Menu, LogOut, User, X } from "lucide-react";
+import { LayoutDashboard, Package, Users, ShoppingCart, Gift, Menu, LogOut, User, X, Settings } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
@@ -11,6 +11,7 @@ const sidebarItems = [
     { icon: ShoppingCart, label: "Orders", to: "/orders" },
     { icon: Gift, label: "Points", to: "/loyalties" },
     { icon: Gift, label: "Rewards", to: "/rewards" },
+    { icon: Settings, label: "Settings", to: "/settings" },
 ];
 
 export default function DashboardLayout() {

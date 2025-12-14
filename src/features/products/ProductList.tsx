@@ -131,7 +131,7 @@ export default function ProductList() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50 hover:bg-gray-50 border-gray-100">
-                                            <TableHead className="w-[100px] uppercase tracking-wider text-xs font-semibold text-gray-500 pl-6">ID</TableHead>
+                                            <TableHead className="uppercase tracking-wider text-xs font-semibold text-gray-500 pl-6 w-[80px]">Image</TableHead>
                                             <TableHead className="uppercase tracking-wider text-xs font-semibold text-gray-500">Product</TableHead>
                                             <TableHead className="uppercase tracking-wider text-xs font-semibold text-gray-500">SKU</TableHead>
                                             <TableHead className="uppercase tracking-wider text-xs font-semibold text-gray-500">Price</TableHead>
@@ -143,8 +143,34 @@ export default function ProductList() {
                                     <TableBody>
                                         {productData?.data.map((product) => (
                                             <TableRow key={product.id} className="group hover:bg-slate-50 transition-colors border-gray-100">
-                                                <TableCell className="font-mono text-xs text-gray-400 pl-6">#{product.id}</TableCell>
-                                                <TableCell className="font-medium text-gray-900">{product.name}</TableCell>
+                                                <TableCell className="pl-6">
+                                                    <div className="h-10 w-10 rounded bg-gray-100 overflow-hidden border border-gray-200">
+                                                        {product.image_url ? (
+                                                            <img
+                                                                src={product.image_url}
+                                                                alt={product.name}
+                                                                className="h-full w-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5Mjk2IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48Y2lyY2xlIGN4PSI4LjUiIGN5PSI4LjUiIHI9IjEuNSI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMjEgMTUgMTYgMTAgNSAyMSI+PC9wb2x5bGluZT48L3N2Zz4=';
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                                                </svg>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="font-medium text-gray-900">
+                                                    <div className="flex flex-col">
+                                                        <span>{product.name}</span>
+                                                        <span className="text-xs text-gray-400 font-mono">ID: #{product.id}</span>
+                                                    </div>
+                                                </TableCell>
                                                 <TableCell className="text-gray-500 text-sm">{product.sku}</TableCell>
                                                 <TableCell>
                                                     {product.discount_price && Number(product.discount_price) < Number(product.price) ? (
