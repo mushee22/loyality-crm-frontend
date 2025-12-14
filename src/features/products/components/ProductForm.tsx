@@ -30,7 +30,6 @@ export function ProductForm({ onSubmit, isLoading, initialData }: ProductFormPro
         if (initialData) {
             reset({
                 name: initialData.name,
-                sku: initialData.sku,
                 price: initialData.price,
                 discount_price: initialData.discount_price || 0,
                 stock: initialData.stock,
@@ -41,7 +40,6 @@ export function ProductForm({ onSubmit, isLoading, initialData }: ProductFormPro
         } else {
             reset({
                 name: "",
-                sku: "",
                 price: 0,
                 discount_price: 0,
                 stock: 0,
@@ -110,12 +108,6 @@ export function ProductForm({ onSubmit, isLoading, initialData }: ProductFormPro
                 <Label htmlFor="name">Product Name</Label>
                 <Input id="name" placeholder="Loyalty Card Gold" {...register("name")} />
                 {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
-                <Input id="sku" placeholder="SKU-001" {...register("sku")} />
-                {errors.sku && <p className="text-sm text-red-500">{errors.sku.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

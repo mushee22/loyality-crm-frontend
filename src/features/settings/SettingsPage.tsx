@@ -12,7 +12,7 @@ export default function SettingsPage() {
     const [referalPoints, setReferalPoints] = useState(0);
 
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isError } = useQuery({
         queryKey: ['settings'],
         queryFn: () => getSettingsByKey('referral_amount'),
     });
