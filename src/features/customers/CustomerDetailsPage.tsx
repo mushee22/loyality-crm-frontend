@@ -47,7 +47,24 @@ export default function CustomerDetailsPage() {
                 scale: 2,
                 logging: false,
                 useCORS: true,
+                windowWidth: 1280, // Force desktop media queries
                 onclone: (clonedDoc) => {
+                    const clonedWrapper = clonedDoc.getElementById('loyalty-card-wrapper');
+                    if (clonedWrapper) {
+                        // Force desktop layout dimensions
+                        clonedWrapper.style.width = '800px';
+                        clonedWrapper.style.maxWidth = 'none';
+                        clonedWrapper.style.margin = '0 auto';
+                        clonedWrapper.style.transform = 'none';
+
+                        // Ensure grid layouts respect desktop sizing
+                        const content = clonedWrapper.querySelector('.md\\:grid-cols-2');
+                        if (content instanceof HTMLElement) {
+                            content.classList.remove('grid-cols-1');
+                            content.classList.add('grid-cols-2');
+                        }
+                    }
+
                     const pointsEl = clonedDoc.getElementById('total-points-display');
                     if (pointsEl) {
                         // Fix for html2canvas not supporting bg-clip: text
@@ -203,7 +220,7 @@ export default function CustomerDetailsPage() {
             <div className="space-y-10">
                 {/* Top Section: Loyalty Card */}
                 <div className="flex justify-center">
-                    <div ref={cardRef} className="w-full max-w-3xl relative transform transition-transform hover:scale-[1.01] duration-300">
+                    <div id="loyalty-card-wrapper" ref={cardRef} className="w-full max-w-3xl relative transform transition-transform hover:scale-[1.01] duration-300">
                         <Card className="overflow-hidden border-none shadow-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
                             <CardContent className="p-0">
                                 {/* Decorative Background Pattern */}
@@ -212,15 +229,15 @@ export default function CustomerDetailsPage() {
                                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
                                 </div>
 
-                                <div className="relative p-8 md:p-10">
+                                <div className="relative p-5 md:p-10">
                                     {/* Header Section */}
-                                    <div className="flex items-start justify-between mb-8">
+                                    <div className="flex items-start justify-between mb-6 md:mb-8">
                                         <div>
-                                            <h1 className="text-3xl font-bold text-white tracking-tight">{customer.name}</h1>
-                                            <p className="text-slate-300 text-sm mt-1">Loyalty Member</p>
+                                            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{customer.name}</h1>
+                                            <p className="text-slate-300 text-xs md:text-sm mt-1">Loyalty Member</p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
-                                            <div className="bg-white p-2 rounded-lg">
+                                            <div className="bg-white p-1.5 md:p-2 rounded-lg">
                                                 <QRCode
                                                     value={`${window.location.origin}/c/${customer.unique_id}`}
                                                     size={64}
@@ -229,66 +246,66 @@ export default function CustomerDetailsPage() {
                                                 />
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Member ID</div>
-                                                <div className="text-lg font-mono font-bold text-white">{customer.unique_id}</div>
+                                                <div className="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">Member ID</div>
+                                                <div className="text-sm md:text-lg font-mono font-bold text-white">{customer.unique_id}</div>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Points Display */}
-                                    <div className="mb-8">
-                                        <div className="text-center mb-8">
-                                            <div className="text-xs text-slate-400 uppercase tracking-wider mb-2">Total Available Points</div>
+                                    <div className="mb-6 md:mb-8">
+                                        <div className="text-center mb-6 md:mb-8">
+                                            <div className="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider mb-2">Total Available Points</div>
                                             <div
                                                 id="total-points-display"
-                                                className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500"
+                                                className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500"
                                             >
                                                 {/* @ts-ignore */}
                                                 {customer.available_points ?? totalPoints}
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
-                                            <div className="text-center p-4 bg-green-500/10 rounded-xl border border-green-500/20">
-                                                <div className="text-2xl font-bold text-green-400">{customer.total_earned_points}</div>
-                                                <div className="text-xs text-slate-400 mt-1">Earned</div>
+                                        <div className="grid grid-cols-3 gap-2 md:gap-4 max-w-2xl mx-auto">
+                                            <div className="text-center p-2 md:p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                                                <div className="text-xl md:text-2xl font-bold text-green-400">{customer.total_earned_points}</div>
+                                                <div className="text-[10px] md:text-xs text-slate-400 mt-1">Earned</div>
                                             </div>
-                                            <div className="text-center p-4 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                                                <div className="text-2xl font-bold text-blue-400">{customer.total_referral_points}</div>
-                                                <div className="text-xs text-slate-400 mt-1">Referral</div>
+                                            <div className="text-center p-2 md:p-4 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                                                <div className="text-xl md:text-2xl font-bold text-blue-400">{customer.total_referral_points}</div>
+                                                <div className="text-[10px] md:text-xs text-slate-400 mt-1">Referral</div>
                                             </div>
-                                            <div className="text-center p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
-                                                <div className="text-2xl font-bold text-amber-400">{customer.total_used_points}</div>
-                                                <div className="text-xs text-slate-400 mt-1">Used</div>
+                                            <div className="text-center p-2 md:p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                                                <div className="text-xl md:text-2xl font-bold text-amber-400">{customer.total_used_points}</div>
+                                                <div className="text-[10px] md:text-xs text-slate-400 mt-1">Used</div>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Brochure Section */}
                                     {((brochureLoyalties?.data && brochureLoyalties.data.length > 0) || (brochureRewards?.data && brochureRewards.data.length > 0)) && (
-                                        <div className="mb-0 border-t border-white/10 pt-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="mb-0 border-t border-white/10 pt-4 md:pt-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                                                 {/* Loyalties - Earn Points (Grid Layout) */}
                                                 {brochureLoyalties?.data && brochureLoyalties.data.length > 0 && (
                                                     <div>
-                                                        <div className="text-xs text-green-400 uppercase tracking-wider mb-4 font-semibold flex items-center gap-2">
+                                                        <div className="text-[10px] md:text-xs text-green-400 uppercase tracking-wider mb-3 md:mb-4 font-semibold flex items-center gap-2">
                                                             <div className="h-1.5 w-1.5 rounded-full bg-green-400"></div>
                                                             Earn Points
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-3">
+                                                        <div className="grid grid-cols-2 gap-2 md:gap-3">
                                                             {brochureLoyalties.data.map((loyalty) => (
                                                                 <div key={loyalty.id} className="flex flex-col items-center p-2 bg-white rounded-xl shadow-sm text-center h-full">
-                                                                    <div className="h-20 w-full mb-2 flex items-center justify-center bg-gray-50 rounded-lg p-1 overflow-hidden">
+                                                                    <div className="h-16 md:h-20 w-full mb-2 flex items-center justify-center bg-gray-50 rounded-lg p-1 overflow-hidden">
                                                                         {loyalty.product?.image_url ? (
                                                                             <img src={loyalty.product.image_url} alt={loyalty.product.name} className="h-full w-full object-contain" />
                                                                         ) : (
-                                                                            <ShoppingBag className="h-8 w-8 text-gray-300" />
+                                                                            <ShoppingBag className="h-6 md:h-8 w-6 md:w-8 text-gray-300" />
                                                                         )}
                                                                     </div>
-                                                                    <div className="text-slate-900 font-extrabold uppercase text-[10px] leading-tight mb-1 line-clamp-2 px-1">
+                                                                    <div className="text-slate-900 font-extrabold uppercase text-[9px] md:text-[10px] leading-tight mb-1 line-clamp-2 px-1">
                                                                         {loyalty.product?.name}
                                                                     </div>
-                                                                    <div className="text-slate-900 font-bold text-xs mt-auto">
+                                                                    <div className="text-slate-900 font-bold text-[10px] md:text-xs mt-auto">
                                                                         {loyalty.points} POINTS
                                                                     </div>
                                                                 </div>
@@ -300,25 +317,25 @@ export default function CustomerDetailsPage() {
                                                 {/* Rewards - Redeem Points (List Layout) */}
                                                 {brochureRewards?.data && brochureRewards.data.length > 0 && (
                                                     <div>
-                                                        <div className="text-xs text-amber-400 uppercase tracking-wider mb-4 font-semibold flex items-center gap-2">
+                                                        <div className="text-[10px] md:text-xs text-amber-400 uppercase tracking-wider mb-3 md:mb-4 font-semibold flex items-center gap-2">
                                                             <div className="h-1.5 w-1.5 rounded-full bg-amber-400"></div>
                                                             Redeem Points
                                                         </div>
-                                                        <div className="space-y-3">
+                                                        <div className="space-y-2 md:space-y-3">
                                                             {brochureRewards.data.map((reward) => (
                                                                 <div key={reward.id} className="flex items-center p-2 rounded-xl bg-white/5 border border-white/10">
                                                                     {/* Points Badge */}
-                                                                    <div className="bg-white rounded-lg px-3 py-2 flex flex-col items-center justify-center min-w-[70px] shadow-sm">
-                                                                        <div className="text-amber-600 font-black text-lg leading-none">
+                                                                    <div className="bg-white rounded-lg px-2 md:px-3 py-1.5 md:py-2 flex flex-col items-center justify-center min-w-[60px] md:min-w-[70px] shadow-sm">
+                                                                        <div className="text-amber-600 font-black text-base md:text-lg leading-none">
                                                                             {reward.required_points}
                                                                         </div>
-                                                                        <div className="text-[8px] text-amber-600/80 font-bold uppercase tracking-wider mt-0.5">
+                                                                        <div className="text-[7px] md:text-[8px] text-amber-600/80 font-bold uppercase tracking-wider mt-0.5">
                                                                             POINTS
                                                                         </div>
                                                                     </div>
                                                                     {/* Reward Name */}
-                                                                    <div className="ml-4 flex-1">
-                                                                        <div className="text-white font-serif text-lg font-medium tracking-wide leading-tight">
+                                                                    <div className="ml-3 md:ml-4 flex-1">
+                                                                        <div className="text-white font-serif text-base md:text-lg font-medium tracking-wide leading-tight">
                                                                             {reward.reward_name || reward.product?.name || "Reward"}
                                                                         </div>
                                                                     </div>
@@ -332,20 +349,20 @@ export default function CustomerDetailsPage() {
                                     )}
 
                                     {/* Footer */}
-                                    <div className="pt-6 mt-3 border-t border-white/10 flex justify-between items-end">
+                                    <div className="pt-4 md:pt-6 mt-2 md:mt-3 border-t border-white/10 flex justify-between items-end">
                                         <div>
-                                            <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Phone</div>
-                                            <div className="text-white text-base font-medium">{customer.phone}</div>
+                                            <div className="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">Phone</div>
+                                            <div className="text-white text-sm md:text-base font-medium">{customer.phone}</div>
                                         </div>
                                         {customer.whatsapp_no && (
                                             <div className="text-center">
-                                                <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">WhatsApp</div>
-                                                <div className="text-white text-base font-medium">{customer.whatsapp_no}</div>
+                                                <div className="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">WhatsApp</div>
+                                                <div className="text-white text-sm md:text-base font-medium">{customer.whatsapp_no}</div>
                                             </div>
                                         )}
                                         <div className="text-right">
-                                            <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Joined</div>
-                                            <div className="text-white text-base font-medium">{new Date(customer.created_at).toLocaleDateString()}</div>
+                                            <div className="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">Joined</div>
+                                            <div className="text-white text-sm md:text-base font-medium">{new Date(customer.created_at).toLocaleDateString()}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -391,47 +408,82 @@ export default function CustomerDetailsPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="p-0 flex-1 overflow-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50/30">
-                                        <TableHead className="w-[100px]">Type</TableHead>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead className="text-right">Points</TableHead>
-                                        <TableHead className="text-right w-[120px]">Date</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {points_ledger.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                                                No points history available
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        points_ledger.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className="font-medium capitalize">
-                                                    <Badge variant="outline" className={`
-                                                        ${item.type === 'earn' ? 'bg-green-50 text-green-700 border-green-200' : ''}
-                                                        ${item.type === 'referral' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
-                                                        ${item.type === 'use' || item.type === 'redeem' ? 'bg-amber-50 text-amber-700 border-amber-200' : ''}
-                                                    `}>
-                                                        {item.type}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-gray-600 text-sm">{item.description}</TableCell>
-                                                <TableCell className={`text-right font-bold ${item.points > 0 ? 'text-green-600' : 'text-slate-600'
-                                                    }`}>
+                            {/* Mobile List View */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {points_ledger.length === 0 ? (
+                                    <div className="p-8 text-center text-gray-500">
+                                        No points history available
+                                    </div>
+                                ) : (
+                                    points_ledger.map((item) => (
+                                        <div key={item.id} className="p-4 space-y-2">
+                                            <div className="flex justify-between items-start">
+                                                <Badge variant="outline" className={`
+                                                    ${item.type === 'earn' ? 'bg-green-50 text-green-700 border-green-200' : ''}
+                                                    ${item.type === 'referral' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
+                                                    ${item.type === 'use' || item.type === 'redeem' ? 'bg-amber-50 text-amber-700 border-amber-200' : ''}
+                                                `}>
+                                                    {item.type}
+                                                </Badge>
+                                                <span className={`font-bold ${item.points > 0 ? 'text-green-600' : 'text-slate-600'}`}>
                                                     {item.points > 0 ? '+' : ''}{item.points}
-                                                </TableCell>
-                                                <TableCell className="text-right text-gray-500 text-sm">
-                                                    {new Date(item.created_at).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <div className="text-sm text-gray-700">
+                                                {item.description}
+                                            </div>
+                                            <div className="text-xs text-gray-400">
+                                                {new Date(item.created_at).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50/30">
+                                            <TableHead className="w-[100px]">Type</TableHead>
+                                            <TableHead>Description</TableHead>
+                                            <TableHead className="text-right">Points</TableHead>
+                                            <TableHead className="text-right w-[120px]">Date</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {points_ledger.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                                                    No points history available
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        ) : (
+                                            points_ledger.map((item) => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className="font-medium capitalize">
+                                                        <Badge variant="outline" className={`
+                                                            ${item.type === 'earn' ? 'bg-green-50 text-green-700 border-green-200' : ''}
+                                                            ${item.type === 'referral' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
+                                                            ${item.type === 'use' || item.type === 'redeem' ? 'bg-amber-50 text-amber-700 border-amber-200' : ''}
+                                                        `}>
+                                                            {item.type}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-gray-600 text-sm">{item.description}</TableCell>
+                                                    <TableCell className={`text-right font-bold ${item.points > 0 ? 'text-green-600' : 'text-slate-600'
+                                                        }`}>
+                                                        {item.points > 0 ? '+' : ''}{item.points}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-gray-500 text-sm">
+                                                        {new Date(item.created_at).toLocaleDateString()}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </CardContent>
                     </Card >
 
@@ -446,59 +498,99 @@ export default function CustomerDetailsPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="p-0 flex-1 overflow-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50/30">
-                                        <TableHead>Order #</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
-                                        <TableHead className="text-right">Points Earned</TableHead>
-                                        <TableHead className="text-right w-[120px]">Date</TableHead>
-                                        <TableHead className="w-[50px]"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {orders.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                                                No orders found
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        orders.map((order) => (
-                                            <TableRow
-                                                key={order.id}
-                                                className="cursor-pointer hover:bg-slate-50 transition-colors"
-                                                onClick={() => {
-                                                    setSelectedOrderId(order.id);
-                                                    setIsOrderModalOpen(true);
-                                                }}
-                                            >
-                                                <TableCell className="font-medium text-slate-900">
-                                                    #{order.order_number}
-                                                </TableCell>
-                                                <TableCell className="text-right font-medium">
-                                                    {order.total_amount}
-                                                </TableCell>
-                                                <TableCell className="text-right">
+                            {/* Mobile List View */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {orders.length === 0 ? (
+                                    <div className="p-8 text-center text-gray-500">
+                                        No orders found
+                                    </div>
+                                ) : (
+                                    orders.map((order) => (
+                                        <div
+                                            key={order.id}
+                                            className="p-4 space-y-2 cursor-pointer active:bg-gray-50"
+                                            onClick={() => {
+                                                setSelectedOrderId(order.id);
+                                                setIsOrderModalOpen(true);
+                                            }}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <div className="font-medium text-slate-900">#{order.order_number}</div>
+                                                <div className="text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</div>
+                                            </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <div className="text-gray-600">
+                                                    Amount: <span className="font-medium text-slate-900">{order.total_amount}</span>
+                                                </div>
+                                                <div className="text-right">
                                                     {order.total_points_earned > 0 ? (
-                                                        <span className="text-green-600 font-bold">+{order.total_points_earned}</span>
+                                                        <span className="text-green-600 font-bold">+{order.total_points_earned} pts</span>
                                                     ) : (
-                                                        <span className="text-gray-400">0</span>
+                                                        <span className="text-gray-400">0 pts</span>
                                                     )}
-                                                </TableCell>
-                                                <TableCell className="text-right text-gray-500 text-sm">
-                                                    {new Date(order.created_at).toLocaleDateString()}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-900">
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50/30">
+                                            <TableHead>Order #</TableHead>
+                                            <TableHead className="text-right">Amount</TableHead>
+                                            <TableHead className="text-right">Points Earned</TableHead>
+                                            <TableHead className="text-right w-[120px]">Date</TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {orders.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                                                    No orders found
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        ) : (
+                                            orders.map((order) => (
+                                                <TableRow
+                                                    key={order.id}
+                                                    className="cursor-pointer hover:bg-slate-50 transition-colors"
+                                                    onClick={() => {
+                                                        setSelectedOrderId(order.id);
+                                                        setIsOrderModalOpen(true);
+                                                    }}
+                                                >
+                                                    <TableCell className="font-medium text-slate-900">
+                                                        #{order.order_number}
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-medium">
+                                                        {order.total_amount}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {order.total_points_earned > 0 ? (
+                                                            <span className="text-green-600 font-bold">+{order.total_points_earned}</span>
+                                                        ) : (
+                                                            <span className="text-gray-400">0</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-gray-500 text-sm">
+                                                        {new Date(order.created_at).toLocaleDateString()}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-900">
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </CardContent>
                     </Card >
                 </div >

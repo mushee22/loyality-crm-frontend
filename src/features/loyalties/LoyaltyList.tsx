@@ -130,7 +130,58 @@ export default function LoyaltyList() {
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto">
+                            {/* Mobile Card View */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {loyaltyData?.data.map((loyalty) => (
+                                    <div key={loyalty.id} className="p-4 space-y-3 bg-white">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="font-semibold text-gray-900">
+                                                    {loyalty.product ? loyalty.product.name : `Product #${loyalty.product_id}`}
+                                                </div>
+                                                <div className="text-xs text-gray-500">
+                                                    {loyalty.product?.sku || `ID: ${loyalty.id}`}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1">
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100">
+                                                    {loyalty.points} pts
+                                                </span>
+                                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${loyalty.is_active
+                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'
+                                                    : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                                    }`}>
+                                                    {loyalty.is_active ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {user?.role !== 'staff' && (
+                                            <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                    onClick={() => openEdit(loyalty)}
+                                                >
+                                                    <Pencil className="h-4 w-4 mr-2" /> Edit
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 text-red-600 border-red-200 hover:bg-red-50"
+                                                    onClick={() => setDeleteId(loyalty.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50 hover:bg-gray-50 border-gray-100">

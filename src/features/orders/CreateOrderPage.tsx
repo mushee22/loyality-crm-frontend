@@ -69,8 +69,8 @@ function OrderItemRow({ index, register, remove, setValue, watch, errors }: Orde
     const filteredProducts = productsData?.data || [];
 
     return (
-        <div className="grid grid-cols-12 gap-4 items-end p-4 border border-gray-100 rounded-lg bg-gray-50/50 relative group">
-            <div className="col-span-12 md:col-span-6 space-y-2" ref={wrapperRef}>
+        <div className="grid grid-cols-12 gap-4 items-start md:items-end p-4 border border-gray-100 rounded-lg bg-gray-50/50 relative group">
+            <div className="col-span-12 md:col-span-4 space-y-2" ref={wrapperRef}>
                 <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</Label>
                 <div className="relative">
                     <div className="relative">
@@ -130,7 +130,7 @@ function OrderItemRow({ index, register, remove, setValue, watch, errors }: Orde
                 {errors.items?.[index]?.product_id && <p className="text-xs text-red-500 mt-1">{errors.items[index].product_id.message}</p>}
             </div>
 
-            <div className="col-span-4 md:col-span-2 space-y-2">
+            <div className="col-span-6 md:col-span-2 space-y-2">
                 <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</Label>
                 <Input
                     type="number"
@@ -140,7 +140,7 @@ function OrderItemRow({ index, register, remove, setValue, watch, errors }: Orde
                 />
             </div>
 
-            <div className="col-span-4 md:col-span-2 space-y-2">
+            <div className="col-span-6 md:col-span-2 space-y-2">
                 <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty</Label>
                 <Input
                     type="number"
@@ -150,22 +150,22 @@ function OrderItemRow({ index, register, remove, setValue, watch, errors }: Orde
                 />
             </div>
 
-            <div className="col-span-4 md:col-span-2 space-y-2">
+            <div className="col-span-6 md:col-span-3 space-y-2">
                 <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</Label>
-                <div className="h-10 flex items-center px-3 text-sm font-semibold text-gray-900 bg-gray-100 rounded-md">
+                <div className="h-10 flex items-center px-3 text-sm font-semibold text-gray-900 bg-gray-100 rounded-md truncate">
                     ₹{lineTotal.toFixed(2)}
                 </div>
             </div>
 
-            <div className="col-span-12 md:col-span-1 flex justify-end md:pb-1">
+            <div className="col-span-6 md:col-span-1 flex justify-end md:justify-center md:pb-1 pt-6 md:pt-0">
                 <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                    className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-10 w-10 md:h-8 md:w-8"
                     onClick={() => remove(index)}
                 >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-5 w-5 md:h-4 md:w-4" />
                 </Button>
             </div>
         </div>
@@ -246,13 +246,13 @@ export default function CreateOrderPage() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 px-4 md:px-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <Button variant="ghost" className="pl-0 hover:bg-transparent -ml-2 mb-2 text-slate-500" onClick={() => navigate("/orders")}>
                         <ArrowLeft className="h-4 w-4 mr-2" /> Back
                     </Button>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{isEditMode ? 'Edit Order' : 'Create New Order'}</h1>
-                    <p className="text-slate-500 mt-1">{isEditMode ? 'Modify customer details or items.' : 'Enter customer details and add products.'}</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">{isEditMode ? 'Edit Order' : 'Create New Order'}</h1>
+                    <p className="text-sm md:text-base text-slate-500 mt-1">{isEditMode ? 'Modify customer details or items.' : 'Enter customer details and add products.'}</p>
                 </div>
             </div>
 

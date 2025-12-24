@@ -104,7 +104,53 @@ export default function UsersListPage() {
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto">
+                            {/* Mobile Card View */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {usersData?.data.map((user) => (
+                                    <div key={user.id} className="p-4 space-y-3 bg-white">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                                    <UserIcon className="h-5 w-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-semibold text-gray-900">{user.name}</div>
+                                                    <div className="text-xs text-slate-500">#{user.id} • {user.email}</div>
+                                                </div>
+                                            </div>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 capitalize">
+                                                {user.role}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex justify-between items-center text-sm text-gray-500 pt-1">
+                                            <span>Joined: {new Date(user.created_at).toLocaleDateString()}</span>
+                                        </div>
+
+                                        <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                onClick={() => openEdit(user)}
+                                            >
+                                                <Pencil className="h-4 w-4 mr-2" /> Edit
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 text-red-600 border-red-200 hover:bg-red-50"
+                                                onClick={() => setDeleteId(user.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50 hover:bg-gray-50 border-gray-100">

@@ -42,19 +42,19 @@ export default function OrderDetailsPage() {
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
             {/* Header Actions */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <Button variant="ghost" className="gap-2 pl-0 hover:bg-transparent hover:text-slate-900" onClick={() => navigate("/orders")}>
                     <ArrowLeft className="h-4 w-4" />
                     Back to Orders
                 </Button>
-                <div className="flex gap-2">
-                    <Button variant="outline" className="gap-2 text-slate-700" onClick={() => navigate(`/orders/edit/${orderId}`)}>
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <Button variant="outline" className="flex-1 sm:flex-none gap-2 text-slate-700" onClick={() => navigate(`/orders/edit/${orderId}`)}>
                         <Pencil className="h-4 w-4" />
-                        Edit Order
+                        Edit
                     </Button>
-                    <Button variant="destructive" className="gap-2 bg-red-600 hover:bg-red-700" onClick={handleDelete} disabled={deleteMutation.isPending}>
+                    <Button variant="destructive" className="flex-1 sm:flex-none gap-2 bg-red-600 hover:bg-red-700" onClick={handleDelete} disabled={deleteMutation.isPending}>
                         <Trash2 className="h-4 w-4" />
-                        Delete Order
+                        Delete
                     </Button>
                 </div>
             </div>
@@ -81,31 +81,55 @@ export default function OrderDetailsPage() {
                             <CardTitle className="text-lg font-semibold">Order Items</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50/50">
-                                        <TableHead>Product</TableHead>
-                                        <TableHead className="text-right">Price</TableHead>
-                                        <TableHead className="text-center">Qty</TableHead>
-                                        <TableHead className="text-right">Total</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {order.order_items?.map((item) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell>
+                            {/* Mobile Item List */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {order.order_items?.map((item) => (
+                                    <div key={item.id} className="p-4 space-y-2">
+                                        <div className="flex justify-between items-start">
+                                            <div>
                                                 <div className="font-medium text-slate-900">{item.product.name}</div>
                                                 <div className="text-xs text-gray-500">SKU: {item.product.sku}</div>
-                                            </TableCell>
-                                            <TableCell className="text-right">₹{item.unit_price}</TableCell>
-                                            <TableCell className="text-center">{item.quantity}</TableCell>
-                                            <TableCell className="text-right font-medium">
+                                            </div>
+                                            <div className="text-right font-medium text-slate-900">
                                                 ₹{(Number(item.unit_price) * item.quantity).toFixed(2)}
-                                            </TableCell>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-gray-500">
+                                            <span>Price: ₹{item.unit_price}</span>
+                                            <span>Qty: {item.quantity}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50/50">
+                                            <TableHead>Product</TableHead>
+                                            <TableHead className="text-right">Price</TableHead>
+                                            <TableHead className="text-center">Qty</TableHead>
+                                            <TableHead className="text-right">Total</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {order.order_items?.map((item) => (
+                                            <TableRow key={item.id}>
+                                                <TableCell>
+                                                    <div className="font-medium text-slate-900">{item.product.name}</div>
+                                                    <div className="text-xs text-gray-500">SKU: {item.product.sku}</div>
+                                                </TableCell>
+                                                <TableCell className="text-right">₹{item.unit_price}</TableCell>
+                                                <TableCell className="text-center">{item.quantity}</TableCell>
+                                                <TableCell className="text-right font-medium">
+                                                    ₹{(Number(item.unit_price) * item.quantity).toFixed(2)}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </CardContent>
                     </Card>
 

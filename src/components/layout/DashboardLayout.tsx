@@ -45,9 +45,7 @@ export default function DashboardLayout() {
         <div className="flex flex-col h-full">
             <div className="h-20 flex items-center px-8 border-b border-white/10 shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                        <span className="text-white font-bold text-xl">C</span>
-                    </div>
+                    <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
                     <span className="text-xl font-bold text-white tracking-tight">CRM</span>
                 </div>
             </div>

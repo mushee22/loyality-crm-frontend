@@ -24,6 +24,11 @@ export default function CustomerList() {
         queryFn: () => getCustomers({ page, per_page: 15, search }),
     });
 
+    const openEdit = (customer: any) => {
+        setEditingCustomer(customer);
+        setIsModalOpen(true);
+    };
+
     const { user } = useAuth();
 
     if (isLoading) return <div className="p-8 text-center text-gray-500">Loading customers...</div>;
@@ -59,7 +64,66 @@ export default function CustomerList() {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* Mobile Card View */}
+                    <div className="md:hidden divide-y divide-gray-100">
+                        {data?.data.map((customer) => (
+                            <div key={customer.id} className="p-4 space-y-3 bg-white">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="font-semibold text-gray-900">{customer.name}</div>
+                                        <div className="text-xs text-gray-500">ID: {customer.unique_id}</div>
+                                        <div className="text-sm text-gray-600 mt-1">{customer.phone}</div>
+                                        {customer.whatsapp_no && (
+                                            <div className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
+                                                <span>WA:</span> {customer.whatsapp_no}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                            onClick={() => navigate(`/customers/${customer.id}`)}
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="text-center p-2 bg-green-50 rounded-lg border border-green-100">
+                                        <div className="text-xs text-green-700 font-medium uppercase">Earned</div>
+                                        <div className="font-bold text-green-800">{customer.total_earned_points}</div>
+                                    </div>
+                                    <div className="text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                                        <div className="text-xs text-blue-700 font-medium uppercase">Referral</div>
+                                        <div className="font-bold text-blue-800">{customer.total_referral_points}</div>
+                                    </div>
+                                    <div className="text-center p-2 bg-amber-50 rounded-lg border border-amber-100">
+                                        <div className="text-xs text-amber-700 font-medium uppercase">Used</div>
+                                        <div className="font-bold text-amber-800">{customer.total_used_points}</div>
+                                    </div>
+                                </div>
+
+                                {user?.role !== 'staff' && (
+                                    <div className="pt-2 border-t border-gray-50 flex justify-end">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 w-full"
+                                            onClick={() => openEdit(customer)}
+                                        >
+                                            <Pencil className="h-4 w-4 mr-2" /> Edit Customer
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
@@ -114,10 +178,7 @@ export default function CustomerList() {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                        onClick={() => {
-                                                            setEditingCustomer(customer);
-                                                            setIsModalOpen(true);
-                                                        }}
+                                                        onClick={() => openEdit(customer)}
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>

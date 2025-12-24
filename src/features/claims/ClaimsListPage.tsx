@@ -64,7 +64,53 @@ export default function ClaimsListPage() {
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto">
+                            {/* Mobile Card View */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {claimsData?.data.map((claim) => (
+                                    <div key={claim.id} className="p-4 space-y-3 bg-white">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-gray-900">Claim #{claim.id}</span>
+                                                    <Badge className="capitalize text-[10px] px-1.5 py-0 h-5" variant={claim.status === 'completed' ? 'default' : 'secondary'}>
+                                                        {claim.status}
+                                                    </Badge>
+                                                </div>
+                                                <div className="text-xs text-gray-500 mt-1">{new Date(claim.created_at).toLocaleDateString()}</div>
+                                            </div>
+                                            <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200">
+                                                -{claim.points_used} pts
+                                            </Badge>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 border border-gray-100">
+                                            <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+                                                <User className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-medium text-slate-900">{claim.customer.name}</div>
+                                                <div className="text-xs text-slate-500">{claim.customer.phone}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-1 pt-1">
+                                            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Rewards</div>
+                                            {claim.rewards.map((reward, idx) => (
+                                                <div key={idx} className="flex justify-between items-center text-sm text-slate-700">
+                                                    <div className="flex items-center gap-2">
+                                                        <Gift className="h-3 w-3 text-slate-400" />
+                                                        <span>{reward.reward_name || reward.product?.name || "Reward"}</span>
+                                                    </div>
+                                                    <span className="text-xs text-slate-400">{reward.pivot.points_used} pts</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50 hover:bg-gray-50 border-gray-100">

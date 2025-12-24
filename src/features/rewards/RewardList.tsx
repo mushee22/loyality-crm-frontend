@@ -106,79 +106,135 @@ export default function RewardList() {
                             <div className="text-gray-500">Loading rewards...</div>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
-                                        <TableHead className="font-semibold text-gray-600 pl-6">ID</TableHead>
-                                        <TableHead className="font-semibold text-gray-600">Reward Name</TableHead>
-                                        <TableHead className="font-semibold text-gray-600">Required Points</TableHead>
-                                        <TableHead className="font-semibold text-gray-600">Description</TableHead>
-                                        <TableHead className="font-semibold text-gray-600">Status</TableHead>
-                                        <TableHead className="font-semibold text-gray-600 text-right pr-6">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {rewardsData?.data.map((reward) => (
-                                        <TableRow key={reward.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <TableCell className="font-mono text-xs text-gray-400 pl-6">#{reward.id}</TableCell>
-                                            <TableCell className="font-medium text-gray-900">
-                                                {reward.reward_name || reward.product?.name || "-"}
-                                            </TableCell>
-                                            <TableCell className="text-gray-700">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <>
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {rewardsData?.data.map((reward) => (
+                                    <div key={reward.id} className="p-4 space-y-3 bg-white">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="font-semibold text-gray-900">{reward.reward_name || reward.product?.name || "-"}</div>
+                                                <div className="text-xs text-gray-400">ID: #{reward.id}</div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
                                                     {reward.required_points} pts
                                                 </span>
-                                            </TableCell>
-                                            <TableCell className="text-gray-600 max-w-xs truncate">
-                                                {reward.description || "-"}
-                                            </TableCell>
-                                            <TableCell>
                                                 <span
-                                                    className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium ${reward.is_active
-                                                            ? "bg-green-100 text-green-800"
-                                                            : "bg-gray-100 text-gray-800"
+                                                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${reward.is_active
+                                                        ? "bg-green-100 text-green-800"
+                                                        : "bg-gray-100 text-gray-800"
                                                         } `}
                                                 >
                                                     {reward.is_active ? "Active" : "Inactive"}
                                                 </span>
-                                            </TableCell>
-                                            <TableCell className="text-right pr-6">
-                                                <div className="flex justify-end gap-1">
-                                                    {user?.role !== 'staff' && (
-                                                        <>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                                onClick={() => openEdit(reward)}
-                                                            >
-                                                                <Pencil className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                                onClick={() => setDeleteId(reward.id)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </TableCell>
+                                            </div>
+                                        </div>
+
+                                        {reward.description && (
+                                            <div className="text-sm text-gray-600 line-clamp-2">
+                                                {reward.description}
+                                            </div>
+                                        )}
+
+                                        {user?.role !== 'staff' && (
+                                            <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                    onClick={() => openEdit(reward)}
+                                                >
+                                                    <Pencil className="h-4 w-4 mr-2" /> Edit
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 text-red-600 border-red-200 hover:bg-red-50"
+                                                    onClick={() => setDeleteId(reward.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+                                            <TableHead className="font-semibold text-gray-600 pl-6">ID</TableHead>
+                                            <TableHead className="font-semibold text-gray-600">Reward Name</TableHead>
+                                            <TableHead className="font-semibold text-gray-600">Required Points</TableHead>
+                                            <TableHead className="font-semibold text-gray-600">Description</TableHead>
+                                            <TableHead className="font-semibold text-gray-600">Status</TableHead>
+                                            <TableHead className="font-semibold text-gray-600 text-right pr-6">Actions</TableHead>
                                         </TableRow>
-                                    ))}
-                                    {rewardsData?.data.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={6} className="h-32 text-center text-gray-400">
-                                                No rewards found.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {rewardsData?.data.map((reward) => (
+                                            <TableRow key={reward.id} className="hover:bg-gray-50/50 transition-colors">
+                                                <TableCell className="font-mono text-xs text-gray-400 pl-6">#{reward.id}</TableCell>
+                                                <TableCell className="font-medium text-gray-900">
+                                                    {reward.reward_name || reward.product?.name || "-"}
+                                                </TableCell>
+                                                <TableCell className="text-gray-700">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                        {reward.required_points} pts
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-gray-600 max-w-xs truncate">
+                                                    {reward.description || "-"}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span
+                                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${reward.is_active
+                                                            ? "bg-green-100 text-green-800"
+                                                            : "bg-gray-100 text-gray-800"
+                                                            } `}
+                                                    >
+                                                        {reward.is_active ? "Active" : "Inactive"}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-right pr-6">
+                                                    <div className="flex justify-end gap-1">
+                                                        {user?.role !== 'staff' && (
+                                                            <>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                                    onClick={() => openEdit(reward)}
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                    onClick={() => setDeleteId(reward.id)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        {rewardsData?.data.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="h-32 text-center text-gray-400">
+                                                    No rewards found.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </>
                     )}
                 </CardContent>
             </Card>

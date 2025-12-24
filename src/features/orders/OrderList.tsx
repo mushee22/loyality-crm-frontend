@@ -25,13 +25,13 @@ export default function OrderList() {
         <div className="space-y-6">
 
             <Card className="border-gray-100 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-gray-100">
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-0 pb-4 border-b border-gray-100 gap-4 sm:gap-0">
                     <div className="space-y-1">
                         <CardTitle className="text-xl font-bold">All Orders</CardTitle>
                         <p className="text-sm text-gray-500">View and manage all orders here.</p>
                     </div>
                     <Button
-                        className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20"
+                        className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20 w-full sm:w-auto"
                         onClick={() => navigate('/orders/create')}
                     >
                         + Create Manual Order
@@ -54,7 +54,50 @@ export default function OrderList() {
                         </Button>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* Mobile Card View */}
+                    <div className="md:hidden divide-y divide-gray-100">
+                        {data?.data.map((order) => (
+                            <div key={order.id} className="p-4 space-y-3 bg-white">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="font-semibold text-gray-900">{order.order_number}</div>
+                                        <div className="text-xs text-gray-500">#{order.id} • {new Date(order.created_at).toLocaleDateString()}</div>
+                                    </div>
+                                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800">
+                                        Completed
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div>
+                                        <span className="text-gray-500 text-xs block">Customer</span>
+                                        <span className="font-medium text-gray-900">{order.customer.name}</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-gray-500 text-xs block">Total</span>
+                                        <span className="font-medium text-gray-900">₹{order.total_amount}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center pt-2">
+                                    <div className="text-xs text-gray-500">
+                                        {order.order_items?.length || 0} items
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                                        onClick={() => navigate(`/orders/${order.id}`)}
+                                    >
+                                        <Eye className="h-4 w-4 mr-2" /> View Details
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">

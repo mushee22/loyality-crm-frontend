@@ -127,7 +127,87 @@ export default function ProductList() {
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto">
+                            {/* Mobile Card View */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {productData?.data.map((product) => (
+                                    <div key={product.id} className="p-4 space-y-3 bg-white">
+                                        <div className="flex gap-4">
+                                            <div className="h-20 w-20 flex-shrink-0 rounded bg-gray-100 overflow-hidden border border-gray-200">
+                                                {product.image_url ? (
+                                                    <img
+                                                        src={product.image_url}
+                                                        alt={product.name}
+                                                        className="h-full w-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOTA5Mjk2IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgcnk9IjIiPjwvcmVjdD48Y2lyY2xlIGN4PSI4LjUiIGN5PSI4LjUiIHI9IjEuNSI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMjEgMTUgMTYgMTAgNSAyMSI+PC9wb2x5bGluZT48L3N2Zz4=';
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="font-semibold text-gray-900 line-clamp-1">{product.name}</p>
+                                                        <p className="text-xs text-gray-500">#{product.id} • {product.sku}</p>
+                                                    </div>
+                                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${product.is_active
+                                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'
+                                                        : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                                        }`}>
+                                                        {product.is_active ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </div>
+
+                                                <div className="mt-2 flex justify-between items-end">
+                                                    <div>
+                                                        {product.discount_price && Number(product.discount_price) < Number(product.price) ? (
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs text-gray-400 line-through">₹{Number(product.price).toFixed(2)}</span>
+                                                                <span className="text-sm font-bold text-green-600">₹{Number(product.discount_price).toFixed(2)}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-bold text-gray-900">₹{Number(product.price).toFixed(2)}</span>
+                                                        )}
+                                                    </div>
+                                                    <span className={`text-xs font-medium ${product.stock < 10 ? 'text-amber-600' : 'text-gray-600'}`}>
+                                                        {product.stock} units
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                onClick={() => openEdit(product)}
+                                            >
+                                                <Pencil className="h-4 w-4 mr-2" /> Edit
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 text-red-600 border-red-200 hover:bg-red-50"
+                                                onClick={() => setDeleteId(product.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50 hover:bg-gray-50 border-gray-100">
