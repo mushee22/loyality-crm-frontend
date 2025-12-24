@@ -71,7 +71,7 @@ export async function getRewards(params?: {
     is_show_to_brochure?: boolean;
 }): Promise<RewardsResponse> {
     const token = localStorage.getItem("token");
-    const response = await axios.get(`${API_URL}/admin/rewards`, {
+    const response = await axios.get(`${API_URL}admin/rewards`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
             search: params?.search || "",
@@ -86,7 +86,7 @@ export async function getRewards(params?: {
 
 export async function getReward(id: number): Promise<Reward> {
     const token = localStorage.getItem("token");
-    const response = await axios.get(`${API_URL}/admin/rewards/${id}`, {
+    const response = await axios.get(`${API_URL}admin/rewards/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
