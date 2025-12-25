@@ -64,7 +64,7 @@ export interface OrderDetailsResponse {
     order: Order;
 }
 
-export const getOrders = async (params?: { page?: number; per_page?: number; search?: string }) => {
+export const getOrders = async (params?: { page?: number; per_page?: number; search?: string; start_date?: string; end_date?: string }) => {
     const response = await axios.get<OrdersResponse>("/admin/orders", { params });
     return response.data;
 };

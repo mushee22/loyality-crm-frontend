@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { ArrowLeft, Download, TrendingUp, ShoppingBag, Copy, ExternalLink, History, Eye, MessageCircle } from "lucide-react";
 import QRCode from "react-qr-code";
 import { useRef, useState } from "react";
-import html2canvas from "html2canvas";
+import { toBlob } from "html-to-image";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Badge } from "../../components/ui/badge";
@@ -41,48 +41,144 @@ export default function CustomerDetailsPage() {
     const generateCardBlob = async () => {
         if (!cardRef.current) return null;
 
-        try {
-            const canvas = await html2canvas(cardRef.current, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                logging: false,
-                useCORS: true,
-                windowWidth: 1280, // Force desktop media queries
-                onclone: (clonedDoc) => {
-                    const clonedWrapper = clonedDoc.getElementById('loyalty-card-wrapper');
-                    if (clonedWrapper) {
-                        // Force desktop layout dimensions
-                        clonedWrapper.style.width = '800px';
-                        clonedWrapper.style.maxWidth = 'none';
-                        clonedWrapper.style.margin = '0 auto';
-                        clonedWrapper.style.transform = 'none';
+        // Helper to convert image URL to Base64
+        const toDataURL = async (url: string): Promise<string | null> => {
+            try {
+                // Use the proxy by removing the domain if it matches our API
+                // This routes the request through Vite dev server which bypasses CORS
+                // Dynamically get domain from env
+                const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://api.traceflowtech.com/api/';
+                let apiDomain = '';
+                try {
+                    apiDomain = new URL(apiBase).origin; // https://api.traceflowtech.com
+                } catch (e) {
+                    console.warn('Invalid API URL in env', e);
+                    apiDomain = 'https://api.traceflowtech.com';
+                }
 
-                        // Ensure grid layouts respect desktop sizing
-                        const content = clonedWrapper.querySelector('.md\\:grid-cols-2');
-                        if (content instanceof HTMLElement) {
-                            content.classList.remove('grid-cols-1');
-                            content.classList.add('grid-cols-2');
+                let fetchUrlString = url;
+                if (url.includes(apiDomain)) {
+                    fetchUrlString = url.replace(apiDomain, '');
+                }
+
+                // Add cache-busting
+                const fetchUrl = new URL(fetchUrlString, window.location.origin);
+                fetchUrl.searchParams.append('t', Date.now().toString());
+
+                const response = await fetch(fetchUrl.toString(), {
+                    cache: 'no-store',
+                });
+
+                if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`);
+
+                const blob = await response.blob();
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onerror = () => resolve(null);
+                    reader.readAsDataURL(blob);
+                });
+            } catch (error) {
+                console.warn('Failed to convert image to Base64:', url, error);
+                return null;
+            }
+        };
+
+        const originalSrcs = new Map<HTMLImageElement, string>();
+
+        try {
+            // Find all images in the card
+            const images = cardRef.current.querySelectorAll('img');
+
+            // Pre-convert to Base64
+            await Promise.all(Array.from(images).map(async (img) => {
+                const src = img.src;
+                if (src.startsWith('http')) {
+                    const base64 = await toDataURL(src);
+                    if (base64) {
+                        originalSrcs.set(img, src);
+                        img.src = base64;
+                        // Important: html-to-image might fail if srcset is present and points to http
+                        if (img.srcset) {
+                            img.removeAttribute('srcset');
                         }
                     }
-
-                    const pointsEl = clonedDoc.getElementById('total-points-display');
-                    if (pointsEl) {
-                        // Fix for html2canvas not supporting bg-clip: text
-                        pointsEl.style.background = 'none';
-                        pointsEl.style.webkitTextFillColor = 'initial';
-                        pointsEl.style.color = '#fbbf24'; // Solid amber color fallback
-                    }
                 }
+            }));
+
+
+            // Create a clone for capture to force desktop layout
+            const clone = cardRef.current.cloneNode(true) as HTMLElement;
+
+            // Style the clone to match desktop width and be off-screen but "visible" for rendering
+            clone.style.width = '800px';
+            clone.style.height = 'auto'; // Let it grow
+            clone.style.maxWidth = 'none';
+            clone.style.position = 'fixed'; // Fixed to viewport
+            clone.style.top = '0';
+            clone.style.left = '0';
+            clone.style.zIndex = '-9999'; // Place behind everything
+            clone.style.backgroundColor = '#1e293b'; // Slate-800 fallback
+            clone.style.margin = '0';
+            clone.style.transform = 'none';
+
+            // Force grid layouts to desktop (2 columns)
+            // We look for the element that has md:grid-cols-2 and force grid-cols-2
+            const grids = clone.querySelectorAll('.md\\:grid-cols-2');
+            grids.forEach(grid => {
+                grid.classList.remove('grid-cols-1');
+                grid.classList.add('grid-cols-2');
             });
 
-            return new Promise<Blob | null>((resolve) => {
-                canvas.toBlob((blob) => {
-                    resolve(blob);
-                }, 'image/png');
+            // Modify the points display text color if needed (fallback)
+            const pointsEl = clone.querySelector('#total-points-display') as HTMLElement;
+            if (pointsEl) {
+                pointsEl.style.background = 'none';
+                pointsEl.style.webkitTextFillColor = 'initial';
+                pointsEl.style.color = '#fbbf24'; // Solid amber
+            }
+
+            // Reduce bottom padding to remove "extra space"
+            const contentContainer = clone.querySelector('.relative.p-5') as HTMLElement;
+            if (contentContainer) {
+                contentContainer.style.paddingBottom = '24px'; // Reduce from p-10 (40px) to ~24px
+            }
+
+            document.body.appendChild(clone);
+
+            // Wait for images and font to decode/render
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const blob = await toBlob(clone, {
+                cacheBust: true,
+                skipAutoScale: true,
+                pixelRatio: 2,
+                backgroundColor: '#1e293b', // Match card background
+                width: 800,
+                height: clone.offsetHeight, // Use offsetHeight for precise height
+                style: {
+                    margin: '0',
+                    transform: 'none',
+                    // Ensure fonts render correctly
+                },
             });
+
+            // Clean up clone
+            document.body.removeChild(clone);
+
+            return blob;
         } catch (error) {
             console.error('Failed to generate image:', error);
+            toast.error("Image generation failed. Try again.");
             return null;
+        } finally {
+            // Restore images on the ORIGINAL element
+            originalSrcs.forEach((src, img) => {
+                img.src = src;
+                if (img.dataset.originalSrcset) { // If we ever saved it
+                    // logic to restore srcset if we hacked it
+                }
+            });
         }
     };
 
@@ -234,7 +330,8 @@ export default function CustomerDetailsPage() {
                                     <div className="flex items-start justify-between mb-6 md:mb-8">
                                         <div>
                                             <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{customer.name}</h1>
-                                            <p className="text-slate-300 text-xs md:text-sm mt-1">Loyalty Member</p>
+                                            <p className="text-white/90 text-sm md:text-base mt-1 font-mono tracking-wide">{customer.phone}</p>
+                                            <p className="text-slate-400 text-xs md:text-sm mt-0.5">Loyalty Member</p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
                                             <div className="bg-white p-1.5 md:p-2 rounded-lg">
@@ -350,10 +447,10 @@ export default function CustomerDetailsPage() {
 
                                     {/* Footer */}
                                     <div className="pt-4 md:pt-6 mt-2 md:mt-3 border-t border-white/10 flex justify-between items-end">
-                                        <div>
+                                        {/* <div>
                                             <div className="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">Phone</div>
                                             <div className="text-white text-sm md:text-base font-medium">{customer.phone}</div>
-                                        </div>
+                                        </div> */}
                                         {customer.whatsapp_no && (
                                             <div className="text-center">
                                                 <div className="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">WhatsApp</div>

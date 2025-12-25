@@ -4,19 +4,22 @@ import { useQuery } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Pagination } from "../../components/ui/pagination";
 import { Button } from "../../components/ui/button";
-import { Calendar, Eye, Filter } from "lucide-react";
+import { Input } from "../../components/ui/input";
+import { Eye } from "lucide-react";
 import { Card, CardHeader, CardContent, CardTitle } from "../../components/ui/card";
 
 import { getOrders } from "./api/orders";
 
 export default function OrderList() {
     const [page, setPage] = useState(1);
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
     const navigate = useNavigate();
 
     const { data, isLoading } = useQuery({
-        queryKey: ['orders', page],
-        queryFn: () => getOrders({ page, per_page: 15 }),
+        queryKey: ['orders', page, startDate, endDate],
+        queryFn: () => getOrders({ page, per_page: 15, start_date: startDate, end_date: endDate }),
     });
 
     if (isLoading) return <div className="p-8 text-center text-gray-500">Loading orders...</div>;
@@ -40,18 +43,44 @@ export default function OrderList() {
                 <CardContent className="p-0">
                     {/* Filters Toolbar */}
                     <div className="p-4 flex flex-wrap gap-2 border-b border-gray-100 bg-white">
-                        <Button variant="outline" className="text-gray-500 font-normal">
-                            Filter by Status <Filter className="ml-2 h-4 w-4 opacity-50" />
-                        </Button>
-                        <Button variant="outline" className="text-gray-500 font-normal">
-                            All Users <Filter className="ml-2 h-4 w-4 opacity-50" />
-                        </Button>
-                        <Button variant="outline" className="text-gray-500 font-normal">
-                            Date From <Calendar className="ml-2 h-4 w-4 opacity-50" />
-                        </Button>
-                        <Button variant="outline" className="text-gray-500 font-normal">
-                            Date To <Calendar className="ml-2 h-4 w-4 opacity-50" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 font-medium">From:</span>
+                            <Input
+                                type="date"
+                                className="w-auto"
+                                value={startDate}
+                                onChange={(e) => {
+                                    setStartDate(e.target.value);
+                                    setPage(1); // Reset to first page on filter change
+                                }}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 font-medium">To:</span>
+                            <Input
+                                type="date"
+                                className="w-auto"
+                                value={endDate}
+                                onChange={(e) => {
+                                    setEndDate(e.target.value);
+                                    setPage(1); // Reset to first page on filter change
+                                }}
+                            />
+                        </div>
+                        {(startDate || endDate) && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setStartDate("");
+                                    setEndDate("");
+                                    setPage(1);
+                                }}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                                Clear Filters
+                            </Button>
+                        )}
                     </div>
 
                     {/* Mobile Card View */}

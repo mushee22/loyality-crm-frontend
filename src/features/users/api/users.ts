@@ -19,6 +19,47 @@ export interface User {
     updated_at: string;
 }
 
+export interface OrderLog {
+    id: number;
+    order_id: number;
+    user_id: number;
+    action: string;
+    user_role: string;
+    user_name: string;
+    description: string;
+    created_at: string;
+    updated_at: string;
+    order: {
+        id: number;
+        customer_id: number;
+        order_number: string;
+        total_amount: string;
+        total_points_earned: number;
+        created_at: string;
+    } | null;
+    user: User;
+}
+
+export interface OrderLogsResponse {
+    current_page: number;
+    data: OrderLog[];
+    first_page_url: string;
+    from: number;
+    last_page: number;
+    last_page_url: string;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number;
+    total: number;
+}
+
 export interface GetUsersParams {
     page?: number;
     search?: string;
@@ -67,5 +108,17 @@ export const updateUser = async (id: number, data: Partial<CreateUserData>) => {
 
 export const deleteUser = async (id: number) => {
     const response = await api.delete(`/admin/users/${id}`);
+    return response.data;
+};
+
+export const getUserOrderLogs = async (userId: number, params: { page?: number; per_page?: number } = {}) => {
+    const queryParams = new URLSearchParams();
+    queryParams.append('user_id', userId.toString());
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
+
+    // Using the same OrdersResponse type logic but the endpoint is different
+    // Assuming the response structure aligns with standard paginated list
+    const response = await api.get<OrderLogsResponse>(`/admin/order-logs?${queryParams.toString()}`);
     return response.data;
 };
