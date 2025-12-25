@@ -5,10 +5,10 @@ import { getLoyalties } from "../loyalties/api/loyalties";
 import { getRewards } from "../rewards/api/rewards";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { ArrowLeft, Download, TrendingUp, ShoppingBag, Copy, ExternalLink, History, Eye, MessageCircle } from "lucide-react";
+import { ArrowLeft, TrendingUp, ShoppingBag, Copy, ExternalLink, History, Eye, MessageCircle } from "lucide-react";
 import QRCode from "react-qr-code";
 import { useRef, useState } from "react";
-import { toBlob } from "html-to-image";
+import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Badge } from "../../components/ui/badge";
@@ -44,18 +44,17 @@ export default function CustomerDetailsPage() {
         // Helper to convert image URL to Base64
         const toDataURL = async (url: string): Promise<string | null> => {
             try {
-                // Use the proxy by removing the domain if it matches our API
-                // This routes the request through Vite dev server which bypasses CORS
                 // Dynamically get domain from env
                 const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://api.traceflowtech.com/api/';
                 let apiDomain = '';
                 try {
-                    apiDomain = new URL(apiBase).origin; // https://api.traceflowtech.com
+                    apiDomain = new URL(apiBase).origin;
                 } catch (e) {
-                    console.warn('Invalid API URL in env', e);
                     apiDomain = 'https://api.traceflowtech.com';
                 }
 
+                // Always use proxy path strategies because the API blocks CORS
+                // We rely on Vite Proxy (Dev) and Infra Proxy (Vercel/Netlify/Nginx) in Prod
                 let fetchUrlString = url;
                 if (url.includes(apiDomain)) {
                     fetchUrlString = url.replace(apiDomain, '');
@@ -84,13 +83,11 @@ export default function CustomerDetailsPage() {
             }
         };
 
-        const originalSrcs = new Map<HTMLImageElement, string>();
+        const images = cardRef.current.querySelectorAll('img');
+        const originalSrcs: Map<HTMLImageElement, string> = new Map();
 
         try {
-            // Find all images in the card
-            const images = cardRef.current.querySelectorAll('img');
-
-            // Pre-convert to Base64
+            // Pre-convert to Base64 to handle CORS
             await Promise.all(Array.from(images).map(async (img) => {
                 const src = img.src;
                 if (src.startsWith('http')) {
@@ -98,112 +95,71 @@ export default function CustomerDetailsPage() {
                     if (base64) {
                         originalSrcs.set(img, src);
                         img.src = base64;
-                        // Important: html-to-image might fail if srcset is present and points to http
-                        if (img.srcset) {
-                            img.removeAttribute('srcset');
-                        }
                     }
                 }
             }));
 
-
-            // Create a clone for capture to force desktop layout
-            const clone = cardRef.current.cloneNode(true) as HTMLElement;
-
-            // Style the clone to match desktop width and be off-screen but "visible" for rendering
-            clone.style.width = '800px';
-            clone.style.height = 'auto'; // Let it grow
-            clone.style.maxWidth = 'none';
-            clone.style.position = 'fixed'; // Fixed to viewport
-            clone.style.top = '0';
-            clone.style.left = '0';
-            clone.style.zIndex = '-9999'; // Place behind everything
-            clone.style.backgroundColor = '#1e293b'; // Slate-800 fallback
-            clone.style.margin = '0';
-            clone.style.transform = 'none';
-
-            // Force grid layouts to desktop (2 columns)
-            // We look for the element that has md:grid-cols-2 and force grid-cols-2
-            const grids = clone.querySelectorAll('.md\\:grid-cols-2');
-            grids.forEach(grid => {
-                grid.classList.remove('grid-cols-1');
-                grid.classList.add('grid-cols-2');
-            });
-
-            // Modify the points display text color if needed (fallback)
-            const pointsEl = clone.querySelector('#total-points-display') as HTMLElement;
-            if (pointsEl) {
-                pointsEl.style.background = 'none';
-                pointsEl.style.webkitTextFillColor = 'initial';
-                pointsEl.style.color = '#fbbf24'; // Solid amber
-            }
-
-            // Reduce bottom padding to remove "extra space"
-            const contentContainer = clone.querySelector('.relative.p-5') as HTMLElement;
-            if (contentContainer) {
-                contentContainer.style.paddingBottom = '24px'; // Reduce from p-10 (40px) to ~24px
-            }
-
-            document.body.appendChild(clone);
-
-            // Wait for images and font to decode/render
+            // Wait a moment for images to re-render with base64
             await new Promise(resolve => setTimeout(resolve, 500));
 
-            const blob = await toBlob(clone, {
-                cacheBust: true,
-                skipAutoScale: true,
-                pixelRatio: 2,
-                backgroundColor: '#1e293b', // Match card background
-                width: 800,
-                height: clone.offsetHeight, // Use offsetHeight for precise height
-                style: {
-                    margin: '0',
-                    transform: 'none',
-                    // Ensure fonts render correctly
-                },
-            });
+            const canvas = await html2canvas(cardRef.current, {
+                backgroundColor: '#1e293b', // Match card bg
+                scale: 2,
+                logging: false,
+                useCORS: true,
+                allowTaint: true,
+                windowWidth: 1280, // Force desktop media queries
+                onclone: (clonedDoc) => {
+                    const clonedWrapper = clonedDoc.getElementById('loyalty-card-wrapper');
+                    if (clonedWrapper) {
+                        // Force desktop layout dimensions
+                        clonedWrapper.style.width = '800px';
+                        clonedWrapper.style.maxWidth = 'none';
+                        clonedWrapper.style.margin = '0 auto';
+                        clonedWrapper.style.transform = 'none';
 
-            // Clean up clone
-            document.body.removeChild(clone);
+                        // Reduce bottom padding
+                        const contentContainer = clonedWrapper.querySelector('.relative.p-5');
+                        if (contentContainer instanceof HTMLElement) {
+                            contentContainer.style.paddingBottom = '24px';
+                        }
 
-            return blob;
-        } catch (error) {
-            console.error('Failed to generate image:', error);
-            toast.error("Image generation failed. Try again.");
-            return null;
-        } finally {
-            // Restore images on the ORIGINAL element
-            originalSrcs.forEach((src, img) => {
-                img.src = src;
-                if (img.dataset.originalSrcset) { // If we ever saved it
-                    // logic to restore srcset if we hacked it
+                        // Ensure grid layouts respect desktop sizing
+                        const content = clonedWrapper.querySelector('.md\\:grid-cols-2');
+                        if (content instanceof HTMLElement) {
+                            content.classList.remove('grid-cols-1');
+                            content.classList.add('grid-cols-2');
+                        }
+                    }
+
+                    const pointsEl = clonedDoc.getElementById('total-points-display');
+                    if (pointsEl) {
+                        // Fix for html2canvas not supporting bg-clip: text
+                        pointsEl.style.background = 'none';
+                        pointsEl.style.webkitTextFillColor = 'initial';
+                        pointsEl.style.color = '#fbbf24'; // Solid amber color fallback
+                    }
                 }
             });
+
+            return new Promise<Blob | null>((resolve) => {
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/png');
+            });
+
+        } catch (error) {
+            console.error('Failed to generate image:', error);
+            return null;
+        } finally {
+            // Restore original image sources
+            originalSrcs.forEach((src, img) => {
+                img.src = src;
+            });
         }
     };
 
-    const handleDownload = async () => {
-        if (!cardRef.current) {
-            toast.error("Card element not found");
-            return;
-        }
 
-        toast.info("Generating image...");
-        const blob = await generateCardBlob();
-
-        if (!blob) {
-            toast.error("Failed to generate card. Check console for details.");
-            return;
-        }
-
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = `${customerData?.customer?.name || 'customer'}-loyalty-card.png`;
-        link.href = url;
-        link.click();
-        URL.revokeObjectURL(url);
-        toast.success("Card downloaded successfully!");
-    };
 
     const copyPublicLink = () => {
         if (customerData?.customer?.unique_id) {
@@ -303,13 +259,7 @@ export default function CustomerDetailsPage() {
                         <ExternalLink className="h-4 w-4" />
                         View Public Page
                     </Button>
-                    <Button
-                        className="gap-2 bg-slate-900 hover:bg-slate-800 text-white"
-                        onClick={handleDownload}
-                    >
-                        <Download className="h-4 w-4" />
-                        Download Card
-                    </Button>
+
                 </div>
             </div>
 
