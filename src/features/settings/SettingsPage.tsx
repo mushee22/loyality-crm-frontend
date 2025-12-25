@@ -34,6 +34,10 @@ export default function SettingsPage() {
     });
 
     const handleSave = () => {
+        if (referalPoints < 0 || referalPoints > 100) {
+            toast.error('Referal points should be between 0 and 100');
+            return;
+        }
         mutate.mutateAsync();
     };
 
@@ -58,11 +62,13 @@ export default function SettingsPage() {
                             :
                             <div className="grid grid-cols-12 p-4 gap-x-2">
                                 <div className="col-span-3 space-y-1">
-                                    <Label>Referal Points</Label>
+                                    <Label>Referal Points(%)</Label>
                                     <Input
                                         type="number"
+                                        placeholder="Enter Referal Points in percentage"
                                         value={referalPoints}
                                         onChange={(e) => setReferalPoints(parseInt(e.target.value))}
+                                        max={100}
                                     />
                                 </div>
                                 <div className="col-span-3 self-end">
