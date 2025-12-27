@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../../context/AuthContext";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Pagination } from "../../components/ui/pagination";
 import { Button } from "../../components/ui/button";
@@ -12,6 +13,7 @@ import ExportOrdersModal from "../reports/components/ExportOrdersModal";
 import { getOrders } from "./api/orders";
 
 export default function OrderList() {
+    const { user } = useAuth();
     const [page, setPage] = useState(1);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -20,8 +22,14 @@ export default function OrderList() {
     const navigate = useNavigate();
 
     const { data, isLoading } = useQuery({
-        queryKey: ['orders', page, startDate, endDate],
-        queryFn: () => getOrders({ page, per_page: 15, start_date: startDate, end_date: endDate }),
+        queryKey: ['orders', page, startDate, endDate, user?.role === 'staff' ? user.id : null],
+        queryFn: () => getOrders({
+            page,
+            per_page: 15,
+            start_date: startDate,
+            end_date: endDate,
+            user_id: user?.role === 'staff' ? user.id : undefined
+        }),
     });
 
     if (isLoading) return <div className="p-8 text-center text-gray-500">Loading orders...</div>;
@@ -36,14 +44,16 @@ export default function OrderList() {
                         <p className="text-sm text-gray-500">View and manage all orders here.</p>
                     </div>
                     <div className="flex gap-2 w-full sm:w-auto">
-                        <Button
-                            variant="outline"
-                            className="bg-white hover:bg-slate-50 text-slate-900 border-slate-200"
-                            onClick={() => setIsExportModalOpen(true)}
-                        >
-                            <Download className="mr-2 h-4 w-4" />
-                            Export
-                        </Button>
+                        {user?.role !== 'staff' && (
+                            <Button
+                                variant="outline"
+                                className="bg-white hover:bg-slate-50 text-slate-900 border-slate-200"
+                                onClick={() => setIsExportModalOpen(true)}
+                            >
+                                <Download className="mr-2 h-4 w-4" />
+                                Export
+                            </Button>
+                        )}
                         <Button
                             className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20 w-full sm:w-auto"
                             onClick={() => navigate('/orders/create')}

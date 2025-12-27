@@ -6,14 +6,16 @@ import { getRewards } from "../rewards/api/rewards";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { ArrowLeft, TrendingUp, ShoppingBag, Copy, ExternalLink, History, Eye, MessageCircle, Download } from "lucide-react";
-import QRCode from "react-qr-code";
 import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Badge } from "../../components/ui/badge";
+import logoBm from "../../assets/logo-bm.jpg";
 import OrderDetailsModal from "../orders/components/OrderDetailsModal";
+
+
 
 export default function CustomerDetailsPage() {
     const { id } = useParams();
@@ -411,12 +413,11 @@ export default function CustomerDetailsPage() {
                                             <p className="text-slate-400 text-xs md:text-sm mt-0.5">Loyalty Member</p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
-                                            <div className="bg-white p-1.5 md:p-2 rounded-lg">
-                                                <QRCode
-                                                    value={`${window.location.origin}/c/${customer.unique_id}`}
-                                                    size={64}
-                                                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                                                    viewBox={`0 0 256 256`}
+                                            <div className=" rounded-lg">
+                                                <img
+                                                    src={logoBm}
+                                                    alt="BM Craft"
+                                                    className="w-16 h-16 aspect-square"
                                                 />
                                             </div>
                                             <div className="text-right">

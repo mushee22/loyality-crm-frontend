@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/ca
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Button } from "../../components/ui/button";
 import { Pagination } from "../../components/ui/pagination";
+import { Input } from "../../components/ui/input";
 import { ArrowLeft, Package, DollarSign, Users, Eye } from "lucide-react";
 
 export default function StaffDetailsPage() {
@@ -17,19 +18,9 @@ export default function StaffDetailsPage() {
     const userId = id;
 
     const [selectedProductId, setSelectedProductId] = useState<string>("");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
     const [page, setPage] = useState(1);
-
-    // Fetch Staff Details (User Name)
-    // We might need to fetch the specific user details if not available.
-    // Assuming we can fetch a single user or we can just rely on the ID for now.
-    // Ideally we should have a `getUser(id)` API. 
-    // I'll check `api/users.ts` later, for now I'll assume we can use `useQuery` to fetch user or just display ID if `getUser` isn't ready.
-    // Wait, the plan says "Header: Staff Name". I should probably check if `getUser` exists. 
-    // Checking `users.ts` in Step 256, I saw `getUsers`, `createUser`, `updateUser`, `deleteUser`. No `getUser`.
-    // I will use `getUsers` with a filter or add `getUser`.
-    // Actually, `getUserOrderLogs` exists. 
-    // Let's assume I can add `getUser` to `api/users.ts` or just fetch the list and find the user. 
-    // For now, let's assume `getUser` will be added or I'll implement it. I'll add `getUser` to `api/users.ts` in the next step.
 
     const { data: user } = useQuery({
         queryKey: ['users', userId],
@@ -43,20 +34,24 @@ export default function StaffDetailsPage() {
     });
 
     const { data: salesStats, isLoading: isLoadingStats } = useQuery({
-        queryKey: ['admin', 'dashboard', 'sales', selectedProductId, userId],
+        queryKey: ['admin', 'dashboard', 'sales', selectedProductId, userId, startDate, endDate],
         queryFn: () => getProductSales({
             product_id: selectedProductId,
             user_id: userId,
+            start_date: startDate,
+            end_date: endDate
         }),
         enabled: !!userId
     });
 
     const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
-        queryKey: ['orders', 'user', userId, page],
+        queryKey: ['orders', 'user', userId, page, startDate, endDate],
         queryFn: () => getOrders({
             page,
             per_page: 15,
-            user_id: userId
+            user_id: userId,
+            start_date: startDate,
+            end_date: endDate
         }),
         enabled: !!userId
     });
@@ -75,6 +70,48 @@ export default function StaffDetailsPage() {
                     {user?.name || "Staff Details"}
                     <span className="block text-sm font-normal text-slate-500 mt-1">{user?.email}</span>
                 </h1>
+
+                {/* Date Filters */}
+                <div className="flex flex-wrap gap-2 items-center">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 font-medium">From:</span>
+                        <Input
+                            type="date"
+                            className="w-auto"
+                            value={startDate}
+                            onChange={(e) => {
+                                setStartDate(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 font-medium">To:</span>
+                        <Input
+                            type="date"
+                            className="w-auto"
+                            value={endDate}
+                            onChange={(e) => {
+                                setEndDate(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    </div>
+                    {(startDate || endDate) && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setStartDate("");
+                                setEndDate("");
+                                setPage(1);
+                            }}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                            Clear
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* Product Sales Stats Section */}

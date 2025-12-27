@@ -7,11 +7,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { ArrowLeft, Pencil, Trash2, User, Phone, Mail, Award } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
+import { useAuth } from "../../context/AuthContext";
 
 export default function OrderDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { user } = useAuth();
     const orderId = Number(id);
 
     const { data: order, isLoading } = useQuery({
@@ -47,16 +49,18 @@ export default function OrderDetailsPage() {
                     <ArrowLeft className="h-4 w-4" />
                     Back to Orders
                 </Button>
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <Button variant="outline" className="flex-1 sm:flex-none gap-2 text-slate-700" onClick={() => navigate(`/orders/edit/${orderId}`)}>
-                        <Pencil className="h-4 w-4" />
-                        Edit
-                    </Button>
-                    <Button variant="destructive" className="flex-1 sm:flex-none gap-2 bg-red-600 hover:bg-red-700" onClick={handleDelete} disabled={deleteMutation.isPending}>
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                    </Button>
-                </div>
+                {user?.role !== 'staff' && (
+                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <Button variant="outline" className="flex-1 sm:flex-none gap-2 text-slate-700" onClick={() => navigate(`/orders/edit/${orderId}`)}>
+                            <Pencil className="h-4 w-4" />
+                            Edit
+                        </Button>
+                        <Button variant="destructive" className="flex-1 sm:flex-none gap-2 bg-red-600 hover:bg-red-700" onClick={handleDelete} disabled={deleteMutation.isPending}>
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Title & Status */}
