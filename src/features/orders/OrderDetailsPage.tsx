@@ -67,7 +67,7 @@ export default function OrderDetailsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-6">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{order.order_number}</h1>
-                    <p className="text-slate-500 mt-1">Placed on {new Date(order.created_at).toLocaleString()}</p>
+                    <p className="text-slate-500 mt-1">Placed on {new Date(order.order_date).toLocaleString()}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="text-right">

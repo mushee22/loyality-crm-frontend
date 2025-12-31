@@ -37,7 +37,7 @@ export default function OrderDetailsModal({ orderId, isOpen, onClose }: OrderDet
                         <div className="space-y-1">
                             <div className="flex items-center gap-2 text-sm text-gray-500">
                                 <Calendar className="h-4 w-4" />
-                                {new Date(order.created_at).toLocaleString()}
+                                {new Date(order.order_date).toLocaleString()}
                             </div>
                             <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="bg-slate-100 text-slate-700">

@@ -178,10 +178,20 @@ export default function CreateOrderPage() {
     const isEditMode = !!id;
     const orderId = Number(id);
 
+    // Helper function to get today's date in YYYY-MM-DD format
+    const getTodayDate = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const { register, control, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<CreateOrderData>({
         resolver: zodResolver(createOrderSchema),
         defaultValues: {
-            items: [{ product_id: 0, quantity: 1, unit_price: 0 }]
+            items: [{ product_id: 0, quantity: 1, unit_price: 0 }],
+            order_date: getTodayDate()
         }
     });
 
@@ -205,6 +215,7 @@ export default function CreateOrderPage() {
                 whatsapp_no: orderData.customer.whatsapp_no || "",
                 email: orderData.customer.email || "",
                 referral_phone: orderData.referral_phone,
+                order_date: orderData.order_date ? orderData.order_date.split('T')[0] : getTodayDate(),
                 // Map items
                 items: orderData.order_items.map(item => ({
                     product_id: item.product.id,
@@ -263,6 +274,16 @@ export default function CreateOrderPage() {
                         <CardDescription>Who is this order for?</CardDescription>
                     </CardHeader>
                     <CardContent className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="order_date">Order Date</Label>
+                            <Input
+                                id="order_date"
+                                type="date"
+                                max={getTodayDate()}
+                                {...register("order_date")}
+                            />
+                            {errors.order_date && <p className="text-sm text-red-500">{errors.order_date.message}</p>}
+                        </div>
                         <div className="space-y-2">
                             <Label htmlFor="customer_name">Customer Name</Label>
                             <Input id="customer_name" placeholder="Enter customer name" {...register("customer_name")} />

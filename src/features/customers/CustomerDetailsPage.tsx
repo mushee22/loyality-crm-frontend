@@ -695,7 +695,7 @@ export default function CustomerDetailsPage() {
                                         >
                                             <div className="flex justify-between items-center">
                                                 <div className="font-medium text-slate-900">#{order.order_number}</div>
-                                                <div className="text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</div>
+                                                <div className="text-sm text-gray-500">{new Date(order.order_date).toLocaleDateString()}</div>
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
                                                 <div className="text-gray-600">
@@ -757,7 +757,7 @@ export default function CustomerDetailsPage() {
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-right text-gray-500 text-sm">
-                                                        {new Date(order.created_at).toLocaleDateString()}
+                                                        {new Date(order.order_date).toLocaleDateString()}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-900">

@@ -211,7 +211,7 @@ export default function PublicCustomerPage() {
                                                             <div className="text-sm font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded">#{order.order_number}</div>
                                                             {expandedOrderId === order.id ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
                                                         </div>
-                                                        <div className="text-xs text-gray-500 font-medium">{new Date(order.created_at).toLocaleDateString()}</div>
+                                                        <div className="text-xs text-gray-500 font-medium">{new Date(order.order_date).toLocaleDateString()}</div>
                                                     </div>
                                                     <div className="flex justify-between items-center border-t border-gray-50 pt-3">
                                                         <span className="text-gray-500 text-sm">Total Amount</span>

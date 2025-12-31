@@ -112,7 +112,7 @@ export default function OrderList() {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <div className="font-semibold text-gray-900">{order.order_number}</div>
-                                        <div className="text-xs text-gray-500">#{order.id} • {new Date(order.created_at).toLocaleDateString()}</div>
+                                        <div className="text-xs text-gray-500">#{order.id} • {new Date(order.order_date).toLocaleDateString()}</div>
                                     </div>
                                     <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800">
                                         Completed
@@ -157,7 +157,7 @@ export default function OrderList() {
                                     <TableHead className="font-semibold text-gray-600">Status</TableHead>
                                     <TableHead className="font-semibold text-gray-600">Items</TableHead>
                                     <TableHead className="font-semibold text-gray-600">Total</TableHead>
-                                    <TableHead className="font-semibold text-gray-600">Created At</TableHead>
+                                    <TableHead className="font-semibold text-gray-600">Order Date</TableHead>
                                     <TableHead className="font-semibold text-gray-600 text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -179,7 +179,7 @@ export default function OrderList() {
                                         </TableCell>
                                         <TableCell>{order.order_items?.length || 0}</TableCell>
                                         <TableCell>₹{order.total_amount}</TableCell>
-                                        <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                                        <TableCell>{new Date(order.order_date).toLocaleDateString()}</TableCell>
                                         <TableCell className="text-right">
                                             <Button
                                                 variant="ghost"

@@ -39,6 +39,7 @@ export interface PointsLedger {
 export interface Order {
     id: number;
     order_number: string;
+    order_date: string;
     total_amount: string;
     created_at: string;
     // status: string; // Field not in provided JSON, removing or mocking if needed
@@ -101,6 +102,7 @@ export const createOrderSchema = z.object({
     referral_phone: z.string().optional().nullable(),
     claim_reward_id: z.number().optional().nullable(),
     total_amount: z.number().optional().nullable(), // Allow passing total amount explicitly
+    order_date: z.string(), // Date in YYYY-MM-DD format
 });
 
 export type CreateOrderData = z.infer<typeof createOrderSchema>;

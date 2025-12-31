@@ -39,6 +39,7 @@ export interface CustomerOrder {
     id: number;
     customer_id: number;
     order_number: string;
+    order_date: string;
     total_amount: string;
     total_points_earned: number;
     created_at: string;
