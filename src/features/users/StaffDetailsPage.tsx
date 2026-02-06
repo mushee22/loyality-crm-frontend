@@ -17,10 +17,54 @@ export default function StaffDetailsPage() {
     const navigate = useNavigate();
     const userId = id;
 
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthIndex = now.getMonth();
+
+    const getMonthDates = (year: number, month: number) => {
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0); // 0th day of next month is last day of current
+        const formatDate = (d: Date) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
+        return { start: formatDate(firstDay), end: formatDate(lastDay) };
+    };
+
+    const initialDates = getMonthDates(currentYear, currentMonthIndex);
+
     const [selectedProductId, setSelectedProductId] = useState<string>("");
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [startDate, setStartDate] = useState(initialDates.start);
+    const [endDate, setEndDate] = useState(initialDates.end);
+    const [selectedMonth, setSelectedMonth] = useState(String(currentMonthIndex));
+    const [selectedYear, setSelectedYear] = useState(String(currentYear));
     const [page, setPage] = useState(1);
+
+    const handleMonthChange = (newMonth: string) => {
+        setSelectedMonth(newMonth);
+        const { start, end } = getMonthDates(Number(selectedYear), Number(newMonth));
+        setStartDate(start);
+        setEndDate(end);
+        setPage(1);
+    };
+
+    const handleYearChange = (newYear: string) => {
+        setSelectedYear(newYear);
+        const { start, end } = getMonthDates(Number(newYear), Number(selectedMonth));
+        setStartDate(start);
+        setEndDate(end);
+        setPage(1);
+    };
+
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    // Generate last 5 years + next year
+    const years = Array.from({ length: 6 }, (_, i) => currentYear - 4 + i);
 
     const { data: user } = useQuery({
         queryKey: ['users', userId],
@@ -73,6 +117,34 @@ export default function StaffDetailsPage() {
 
                 {/* Date Filters */}
                 <div className="flex flex-wrap gap-2 items-center">
+                    {/* Month/Year Selectors */}
+                    <div className="flex items-center gap-2">
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            value={selectedMonth}
+                            onChange={(e) => handleMonthChange(e.target.value)}
+                        >
+                            {months.map((month, index) => (
+                                <option key={month} value={index}>
+                                    {month}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            value={selectedYear}
+                            onChange={(e) => handleYearChange(e.target.value)}
+                        >
+                            {years.map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="h-6 w-px bg-gray-300 mx-2 hidden sm:block"></div>
+
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-500 font-medium">From:</span>
                         <Input

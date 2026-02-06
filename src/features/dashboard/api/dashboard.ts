@@ -6,8 +6,12 @@ export interface DashboardMetrics {
     customer_count: number;
 }
 
-export const getDashboardMetrics = async (): Promise<DashboardMetrics> => {
-    const response = await api.get<DashboardMetrics>('/admin/dashboard');
+export const getDashboardMetrics = async (params?: { start_date?: string; end_date?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.start_date) queryParams.append('start_date', params.start_date);
+    if (params?.end_date) queryParams.append('end_date', params.end_date);
+
+    const response = await api.get<DashboardMetrics>(`/admin/dashboard?${queryParams.toString()}`);
     return response.data;
 };
 

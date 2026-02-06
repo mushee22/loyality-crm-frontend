@@ -4,15 +4,84 @@ import { getDashboardMetrics, getProductSales } from "./api/dashboard";
 import { getProducts } from "../products/api/products";
 import { getUsers } from "../users/api/users";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
 import { DollarSign, Package, Users } from "lucide-react";
 
 export default function DashboardPage() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthIndex = now.getMonth();
+
+    const getMonthDates = (year: number, month: number) => {
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const formatDate = (d: Date) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
+        return { start: formatDate(firstDay), end: formatDate(lastDay) };
+    };
+
+    const initialDates = getMonthDates(currentYear, currentMonthIndex);
+
     const [selectedProductId, setSelectedProductId] = useState<string>("");
     const [selectedUserId, setSelectedUserId] = useState<string>("");
 
+    // Stats Filters State
+    const [statsStartDate, setStatsStartDate] = useState(initialDates.start);
+    const [statsEndDate, setStatsEndDate] = useState(initialDates.end);
+    const [statsMonth, setStatsMonth] = useState(String(currentMonthIndex));
+    const [statsYear, setStatsYear] = useState(String(currentYear));
+
+    // Sales Filters State
+    const [salesStartDate, setSalesStartDate] = useState(initialDates.start);
+    const [salesEndDate, setSalesEndDate] = useState(initialDates.end);
+    const [salesMonth, setSalesMonth] = useState(String(currentMonthIndex));
+    const [salesYear, setSalesYear] = useState(String(currentYear));
+
+    // Stats Handlers
+    const handleStatsMonthChange = (newMonth: string) => {
+        setStatsMonth(newMonth);
+        const { start, end } = getMonthDates(Number(statsYear), Number(newMonth));
+        setStatsStartDate(start);
+        setStatsEndDate(end);
+    };
+
+    const handleStatsYearChange = (newYear: string) => {
+        setStatsYear(newYear);
+        const { start, end } = getMonthDates(Number(newYear), Number(statsMonth));
+        setStatsStartDate(start);
+        setStatsEndDate(end);
+    };
+
+    // Sales Handlers
+    const handleSalesMonthChange = (newMonth: string) => {
+        setSalesMonth(newMonth);
+        const { start, end } = getMonthDates(Number(salesYear), Number(newMonth));
+        setSalesStartDate(start);
+        setSalesEndDate(end);
+    };
+
+    const handleSalesYearChange = (newYear: string) => {
+        setSalesYear(newYear);
+        const { start, end } = getMonthDates(Number(newYear), Number(salesMonth));
+        setSalesStartDate(start);
+        setSalesEndDate(end);
+    };
+
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    const years = Array.from({ length: 6 }, (_, i) => currentYear - 4 + i);
+
     const { data: metrics, isLoading: isLoadingMetrics, error: metricsError } = useQuery({
-        queryKey: ['admin', 'dashboard'],
-        queryFn: getDashboardMetrics,
+        queryKey: ['admin', 'dashboard', statsStartDate, statsEndDate],
+        queryFn: () => getDashboardMetrics({ start_date: statsStartDate, end_date: statsEndDate }),
     });
 
     const { data: products } = useQuery({
@@ -33,10 +102,12 @@ export default function DashboardPage() {
     }, [users?.data, selectedUserId]);
 
     const { data: productSales, isLoading: isLoadingSales } = useQuery({
-        queryKey: ['admin', 'dashboard', 'sales', selectedProductId, selectedUserId],
+        queryKey: ['admin', 'dashboard', 'sales', selectedProductId, selectedUserId, salesStartDate, salesEndDate],
         queryFn: () => getProductSales({
             product_id: selectedProductId,
             user_id: selectedUserId,
+            start_date: salesStartDate,
+            end_date: salesEndDate
         }),
         enabled: !!selectedUserId || !!selectedProductId // Only fetch if we have filters, though now we enforce user_id
     });
@@ -56,6 +127,76 @@ export default function DashboardPage() {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+
+            {/* Stats Filters Section */}
+            <div className="flex flex-col gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="flex flex-wrap items-center gap-4">
+                    <span className="text-sm font-semibold text-gray-700">Overview Filters:</span>
+                    {/* Stats Month/Year Selectors */}
+                    <div className="flex items-center gap-2">
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            value={statsMonth}
+                            onChange={(e) => handleStatsMonthChange(e.target.value)}
+                        >
+                            {months.map((month, index) => (
+                                <option key={month} value={index}>
+                                    {month}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            value={statsYear}
+                            onChange={(e) => handleStatsYearChange(e.target.value)}
+                        >
+                            {years.map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="h-6 w-px bg-gray-300 hidden sm:block"></div>
+
+                    {/* Stats Date Range Inputs */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 font-medium">From:</span>
+                            <Input
+                                type="date"
+                                className="w-auto h-10"
+                                value={statsStartDate}
+                                onChange={(e) => setStatsStartDate(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 font-medium">To:</span>
+                            <Input
+                                type="date"
+                                className="w-auto h-10"
+                                value={statsEndDate}
+                                onChange={(e) => setStatsEndDate(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {(statsStartDate || statsEndDate) && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setStatsStartDate("");
+                                setStatsEndDate("");
+                            }}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                            Clear
+                        </Button>
+                    )}
+                </div>
+            </div>
 
             {/* Stats Cards */}
             <div className="grid gap-4 md:grid-cols-3">
@@ -116,10 +257,81 @@ export default function DashboardPage() {
                         <Package className="h-5 w-5" />
                         Product Sales
                     </h2>
-                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <div className="relative flex-1 sm:flex-none">
+                </div>
+
+                {/* Filters Section */}
+                <div className="flex flex-col gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <span className="text-sm font-semibold text-gray-700">Sales Filters:</span>
+                        {/* Sales Month/Year Selectors */}
+                        <div className="flex items-center gap-2">
                             <select
-                                className="h-10 w-full sm:w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                value={salesMonth}
+                                onChange={(e) => handleSalesMonthChange(e.target.value)}
+                            >
+                                {months.map((month, index) => (
+                                    <option key={month} value={index}>
+                                        {month}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                value={salesYear}
+                                onChange={(e) => handleSalesYearChange(e.target.value)}
+                            >
+                                {years.map((year) => (
+                                    <option key={year} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="h-6 w-px bg-gray-300 hidden sm:block"></div>
+
+                        {/* Sales Date Range Inputs */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500 font-medium">From:</span>
+                                <Input
+                                    type="date"
+                                    className="w-auto h-10"
+                                    value={salesStartDate}
+                                    onChange={(e) => setSalesStartDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500 font-medium">To:</span>
+                                <Input
+                                    type="date"
+                                    className="w-auto h-10"
+                                    value={salesEndDate}
+                                    onChange={(e) => setSalesEndDate(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {(salesStartDate || salesEndDate) && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setSalesStartDate("");
+                                    setSalesEndDate("");
+                                }}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                                Clear
+                            </Button>
+                        )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 border-t border-gray-200 pt-4">
+                        <div className="w-full sm:w-auto">
+                            <select
+                                className="h-10 w-full sm:w-[250px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 value={selectedProductId}
                                 onChange={(e) => setSelectedProductId(e.target.value)}
                             >
@@ -131,9 +343,9 @@ export default function DashboardPage() {
                                 ))}
                             </select>
                         </div>
-                        <div className="relative flex-1 sm:flex-none">
+                        <div className="w-full sm:w-auto">
                             <select
-                                className="h-10 w-full sm:w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="h-10 w-full sm:w-[250px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 value={selectedUserId}
                                 onChange={(e) => setSelectedUserId(e.target.value)}
                             >
