@@ -21,6 +21,7 @@ export interface ProductSalesStats {
     total_quantity_sold: number;
     total_amount_sold: number;
     customers_count: number;
+    total_commission?: number;
 }
 
 export const getProductSales = async (params: { product_id?: string; user_id?: string; start_date?: string; end_date?: string }) => {

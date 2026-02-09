@@ -127,3 +127,13 @@ export const getUserOrderLogs = async (userId: number, params: { page?: number; 
     const response = await api.get<OrderLogsResponse>(`/admin/order-logs?${queryParams.toString()}`);
     return response.data;
 };
+
+export const getProductCommissions = async (userId: number) => {
+    const response = await api.get<{ commissions: { product_id: number; commission_rate: number }[] }>(`/admin/users/${userId}/product-commissions`);
+    return response.data;
+};
+
+export const updateProductCommissions = async (userId: number, commissions: { product_id: number; commission_rate: number }[]) => {
+    const response = await api.put(`/admin/users/${userId}/product-commissions`, { commissions });
+    return response.data;
+};

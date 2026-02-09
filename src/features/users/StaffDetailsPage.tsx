@@ -1,21 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getProductSales } from "../dashboard/api/dashboard";
 import { getOrders } from "../orders/api/orders";
 import { getProducts } from "../products/api/products";
-import { getUser } from "./api/users";
+import { getUser, getProductCommissions, updateProductCommissions } from "./api/users";
+
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Button } from "../../components/ui/button";
 import { Pagination } from "../../components/ui/pagination";
 import { Input } from "../../components/ui/input";
-import { ArrowLeft, Package, DollarSign, Users, Eye } from "lucide-react";
+import { Modal } from "../../components/ui/modal";
+
+
+import { ArrowLeft, Package, DollarSign, Users, Eye, Loader2, Save } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 
 export default function StaffDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const userId = id;
+
 
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -36,6 +45,10 @@ export default function StaffDetailsPage() {
     const initialDates = getMonthDates(currentYear, currentMonthIndex);
 
     const [selectedProductId, setSelectedProductId] = useState<string>("");
+    const [commissionRates, setCommissionRates] = useState<{ [key: number]: number }>({});
+    const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
+
+
     const [startDate, setStartDate] = useState(initialDates.start);
     const [endDate, setEndDate] = useState(initialDates.end);
     const [selectedMonth, setSelectedMonth] = useState(String(currentMonthIndex));
@@ -99,6 +112,52 @@ export default function StaffDetailsPage() {
         }),
         enabled: !!userId
     });
+    const { data: commissions, isLoading: isLoadingCommissions } = useQuery({
+        queryKey: ['users', userId, 'commissions'],
+        queryFn: () => getProductCommissions(Number(userId)),
+        enabled: !!userId,
+    });
+
+    // Effect to initialize commission rates
+    // Effect to initialize commission rates
+    useEffect(() => {
+        if (commissions?.commissions) {
+            const rates: { [key: number]: number } = {};
+            commissions.commissions.forEach((c: any) => {
+                rates[c.product_id] = c.commission_rate;
+            });
+            setCommissionRates(rates);
+        }
+    }, [commissions]);
+
+    const updateCommissionMutation = useMutation({
+        mutationFn: (data: { product_id: number; commission_rate: number }[]) =>
+            updateProductCommissions(Number(userId), data),
+        onSuccess: () => {
+            toast.success("Commissions updated successfully");
+            queryClient.invalidateQueries({ queryKey: ['users', userId, 'commissions'] });
+            setIsCommissionModalOpen(false);
+        },
+        onError: (error) => {
+            toast.error("Failed to update commissions");
+            console.error(error);
+        }
+    });
+
+    const handleCommissionChange = (productId: number, rate: string) => {
+        setCommissionRates(prev => ({
+            ...prev,
+            [productId]: parseFloat(rate) || 0
+        }));
+    };
+
+    const handleSaveCommissions = () => {
+        const payload = Object.entries(commissionRates).map(([productId, rate]) => ({
+            product_id: Number(productId),
+            commission_rate: rate
+        }));
+        updateCommissionMutation.mutate(payload);
+    };
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto pb-10">
@@ -209,7 +268,7 @@ export default function StaffDetailsPage() {
                     </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Quantity Sold</CardTitle>
@@ -243,8 +302,120 @@ export default function StaffDetailsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Commission</CardTitle>
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {isLoadingStats ? "..." : (salesStats?.total_commission ? `₹${salesStats.total_commission.toLocaleString()}` : '₹0')}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
+
+            {/* Commission Management Section */}
+            <div className="space-y-4 pt-6 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                        <DollarSign className="h-5 w-5" />
+                        Product Commissions
+                    </h2>
+                    <Button
+                        onClick={() => setIsCommissionModalOpen(true)}
+                        variant="outline"
+                    >
+                        <DollarSign className="mr-2 h-4 w-4" />
+                        Manage Commissions
+                    </Button>
+                </div>
+
+                <Modal
+                    isOpen={isCommissionModalOpen}
+                    onClose={() => setIsCommissionModalOpen(false)}
+                    title="Manage Product Commissions"
+                    className="max-w-6xl"
+                >
+                    <div className="space-y-4">
+                        <Card className="border-gray-100 shadow-sm max-h-[60vh] overflow-y-auto">
+                            <CardContent className="p-0">
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow className="bg-gray-50 hover:bg-gray-50">
+                                                <TableHead>Product Name</TableHead>
+                                                <TableHead>Price</TableHead>
+                                                <TableHead>Commission Rate (%)</TableHead>
+                                                <TableHead>Estimated Commission</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {products?.data.map((product: any) => (
+                                                <TableRow key={product.id}>
+                                                    <TableCell className="font-medium">{product.name}</TableCell>
+                                                    <TableCell>₹{product.price}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Input
+                                                                type="number"
+                                                                step="0.1"
+                                                                min="0"
+                                                                max="100"
+                                                                className="w-24"
+                                                                value={commissionRates[product.id] ?? (commissions?.commissions?.find((c: any) => c.product_id === product.id)?.commission_rate || 0)}
+                                                                onChange={(e) => handleCommissionChange(product.id, e.target.value)}
+                                                            />
+                                                            <span className="text-gray-500">%</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        ₹{((product.price * (commissionRates[product.id] ?? (commissions?.commissions?.find((c: any) => c.product_id === product.id)?.commission_rate || 0))) / 100).toFixed(2)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {!products?.data?.length && (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                                                        No products available to configure commissions.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <div className="flex justify-end gap-2 pt-4 border-t">
+                            <Button variant="outline" onClick={() => setIsCommissionModalOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    handleSaveCommissions();
+                                    setIsCommissionModalOpen(false);
+                                }}
+                                disabled={updateCommissionMutation.isPending || isLoadingCommissions}
+                            >
+                                {updateCommissionMutation.isPending ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="mr-2 h-4 w-4" />
+                                        Save Changes
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+            </div>
+
 
             {/* Orders List Section */}
             <div className="space-y-4 pt-6 border-t border-gray-100">
