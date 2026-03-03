@@ -347,8 +347,8 @@ export default function StaffDetailsPage() {
                                             <TableRow className="bg-gray-50 hover:bg-gray-50">
                                                 <TableHead>Product Name</TableHead>
                                                 <TableHead>Price</TableHead>
-                                                <TableHead>Commission Rate (%)</TableHead>
-                                                <TableHead>Estimated Commission</TableHead>
+                                                <TableHead>Commission Rate  </TableHead>
+                                                {/* <TableHead>Estimated Commission</TableHead> */}
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -362,17 +362,17 @@ export default function StaffDetailsPage() {
                                                                 type="number"
                                                                 step="0.1"
                                                                 min="0"
-                                                                max="100"
+                                                                // max="100"
                                                                 className="w-24"
                                                                 value={commissionRates[product.id] ?? (commissions?.commissions?.find((c: any) => c.product_id === product.id)?.commission_rate || 0)}
                                                                 onChange={(e) => handleCommissionChange(product.id, e.target.value)}
                                                             />
-                                                            <span className="text-gray-500">%</span>
+                                                            {/* <span className="text-gray-500">%</span> */}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell>
+                                                    {/* <TableCell>
                                                         ₹{((product.price * (commissionRates[product.id] ?? (commissions?.commissions?.find((c: any) => c.product_id === product.id)?.commission_rate || 0))) / 100).toFixed(2)}
-                                                    </TableCell>
+                                                    </TableCell> */}
                                                 </TableRow>
                                             ))}
                                             {!products?.data?.length && (
