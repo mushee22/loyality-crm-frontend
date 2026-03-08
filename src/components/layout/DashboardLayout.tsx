@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, Users, ShoppingCart, Gift, Menu, LogOut, User, X, Settings } from "lucide-react";
+import { LayoutDashboard, Package, Users, ShoppingCart, Gift, Menu, LogOut, User, X, Settings, DollarSign } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { useAuth } from "../../context/AuthContext";
@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/" },
+    { icon: DollarSign, label: "Commission", to: "/commission" },
     { icon: User, label: "Staff", to: "/staff" },
     { icon: Package, label: "Products", to: "/products" },
     { icon: Users, label: "Customers", to: "/customers" },
@@ -32,6 +33,8 @@ export default function DashboardLayout() {
     const filteredItems = sidebarItems.filter(item => {
         if (user?.role === 'staff') {
             return !['Dashboard', 'Products', 'Staff', 'Settings'].includes(item.label);
+        } else {
+            return item.label !== 'Commission';
         }
         return true;
     });

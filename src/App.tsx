@@ -21,6 +21,7 @@ import PublicCustomerPage from "./pages/PublicCustomerPage";
 import UsersListPage from "./features/users/UsersListPage";
 import StaffDetailsPage from "./features/users/StaffDetailsPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import CommissionPage from "./features/dashboard/CommissionPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,17 @@ const StaffRestricted = ({ children }: { children: React.ReactNode }) => {
 
   if (user?.role === 'staff') {
     return <Navigate to="/customers" replace />;
+  }
+  return <>{children}</>;
+};
+
+const StaffOnly = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) return <div>Loading...</div>; // Or return null/spinner
+
+  if (user?.role !== 'staff') {
+    return <Navigate to="/" replace />;
   }
   return <>{children}</>;
 };
@@ -64,6 +76,14 @@ const router = createBrowserRouter([
           <StaffRestricted>
             <DashboardPage />
           </StaffRestricted>
+        ),
+      },
+      {
+        path: "commission",
+        element: (
+          <StaffOnly>
+            <CommissionPage />
+          </StaffOnly>
         ),
       },
       {
